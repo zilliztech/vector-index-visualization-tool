@@ -3,19 +3,8 @@ import hnswlib
 import numpy as np
 from collections import defaultdict
 
-class NodeType:
-    Default = 0
-    Coarse = 0
-    Candidate = 1
-    Fine = 2
-    Entry = 3 # 不应该包括entry
-    
-class LinkType:
-    Default = 0
-    Visited = 0
-    Extended = 1
-    Searched = 2
-    Fine = 3
+from custom_types import NodeType, LinkType
+
 
 class HNSWIndex(BaseIndex):
     def __init__(self):
@@ -38,6 +27,8 @@ class HNSWIndex(BaseIndex):
             ef_construction=self.ef_construction,
             M=self.M
         )
+        self.index.add_items(self.vectors)
+
         self.index.set_ef(self.ef)
         self.index.set_num_threads(self.num_threads)
 
@@ -68,60 +59,61 @@ class HNSWIndex(BaseIndex):
         entry_id = -1
 
         for level in range(num_level-1, -1, -1):
-            # the entry of level-k+1 === the fine of level-k 
+            # the entry of level-k+1 === the fine of level-k
             if level < num_level - 1:
                 fine_ids = [entry_id]
-            
+
             visited_record_level = visited_record[level]
-            
+
             node_type = defaultdict(lambda: NodeType.Coarse)
             link_type = defaultdict(lambda: LinkType.Visited)
             node_dist = defaultdict(lambda: -1)
-            
+
             source_map = defaultdict(lambda: -1)
-            
+
             for source, target, dist in visited_record_level:
                 # entry
                 if source < 0:
                     entry_id = target
                     node_dist[target] = dist
-                    
-                else:
-                    node_type[source] = max(node_type[source], NodeType.Candidate)
-                    node_type[target] = max(node_type[target], NodeType.Coarse)
-                    
-                    if level < num_level - 1:
-                        if target in node_dist:
-                            link_type[(source, target)] = max(link_type[(source, target)], LinkType.Visited)
-                        else:
-                            node_dist[target] = dist
-                            link_type[(source, target)] = max(link_type[(source, target)], LinkType.Extended)
-                            
-                            source_map[target] = source
-                    else:
-                        if dist < 0:
-                            link_type[(source, target)] = max(link_type[(source, target)], LinkType.Visited)
-                        else:
-                            node_dist[target] = dist
-                            link_type[(source, target)] = max(link_type[(source, target)], LinkType.Extended)
 
-                            source_map[target] = source
+                else:
+                    node_type[source] = max(
+                        node_type[source], NodeType.Candidate)
+                    node_type[target] = max(node_type[target], NodeType.Coarse)
+
+                    # visited or not
+                    if target in node_dist:
+                        link_type[(source, target)] = max(
+                            link_type[(source, target)], LinkType.Visited)
+                    else:
+                        node_dist[target] = dist
+                        link_type[(source, target)] = max(
+                            link_type[(source, target)], LinkType.Extended)
+
+                        source_map[target] = source
+
+                        # for the non-base-layer，"search" means "fine"
+                        # 不需要判断search，后面直接判定fine就行
+                        if level == num_level - 1:
                             pre_source = source_map[source]
                             if pre_source >= 0:
-                                link_type[(pre_source, source)] = max(link_type[(pre_source, source)], LinkType.Searched)
-            
+                                link_type[(pre_source, source)] = max(
+                                    link_type[(pre_source, source)],
+                                    LinkType.Searched)
+
             for fine_id in fine_ids:
                 node_type[fine_id] = max(node_type[source], NodeType.Fine)
-                
+
                 t = fine_id
                 s = source_map[t]
                 while s >= 0:
                     link_type[(s, t)] = max(link_type[(s, t)], LinkType.Fine)
                     t = s
                     s = source_map[t]
-                    
+
             vis_data_level = {
-                'entry_id': entry_id,
+                'entry_ids': [entry_id],
                 'fine_ids': list(fine_ids),
                 'nodes': [{
                     'id': id,
@@ -134,8 +126,7 @@ class HNSWIndex(BaseIndex):
                     'type': type,
                 } for link, type in link_type.items()]
             }
-            
-            vis_data.append(vis_data_level)
-        
-        return vis_data
 
+            vis_data.append(vis_data_level)
+
+        return vis_data
