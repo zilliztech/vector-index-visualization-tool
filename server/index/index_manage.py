@@ -27,13 +27,16 @@ class Index:
 
     def set_data(self, data):
         self.data.set_data(data)
-        self.index.set_vectors(self.data.vectors)
+        self.index.set_vectors(self.data.train_vectors)
 
     def set_search_params(self, **params):
         self.index.set_search_params(**params)
-    
+
     def set_build_params(self, **params):
         self.index.set_build_params(**params)
 
     def get_search_vis_data(self, p):
         return self.index.get_search_vis_data(p)
+
+    def search_by_id(self, id):
+        return self.index.get_search_vis_data(self.data.test_vectors[id])

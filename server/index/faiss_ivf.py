@@ -73,7 +73,7 @@ class FaissIvfIndex(BaseIndex):
     def get_search_vis_data(self, p):
         if not self.has_index:
             return None
-            
+
         index = self.index
 
         target = np.array([p], dtype='float32')

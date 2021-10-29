@@ -7,7 +7,8 @@ class BaseIndex:
         self.vectors = []
         self.dim = 0
 
-    def set_data(self, vectors):
+    def set_vectors(self, vectors):
+        self.has_vectors = True
         self.vectors = vectors
         self.dim = len(vectors[0])
         self.build()
