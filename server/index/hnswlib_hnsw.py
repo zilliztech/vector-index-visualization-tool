@@ -17,7 +17,7 @@ class HNSWIndex(BaseIndex):
         self.k = 8
 
     def build(self):
-        if not self.has_data:
+        if not self.has_vectors:
             raise RuntimeError('Index Build Error: No Vectors')
 
         self.has_index = True
@@ -36,10 +36,10 @@ class HNSWIndex(BaseIndex):
         self.ef_construction = ef_construction
         self.M = M
 
-        if self.has_data:
+        if self.has_vectors:
             self.build()
 
-    def set_search_params(self, ef, k=8, num_threads=4):
+    def set_search_params(self, ef=16, k=8, num_threads=4):
         self.ef = ef
         self.num_threads = num_threads
         self.k = k
@@ -49,7 +49,11 @@ class HNSWIndex(BaseIndex):
             self.index.set_num_threads(self.num_threads)
 
     def get_search_vis_data(self, p):
-        labels, distances, visited_records = self.index.knn_query_for_vis([p], k=self.k)
+        if not self.has_index:
+            return None
+
+        labels, distances, visited_records = self.index.knn_query_for_vis([
+                                                                          p], k=self.k)
 
         vis_data = []
 

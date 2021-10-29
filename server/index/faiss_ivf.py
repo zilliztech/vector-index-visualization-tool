@@ -19,7 +19,7 @@ class FaissIvfIndex(BaseIndex):
         self.k = 8
 
     def build(self):
-        if not self.has_data:
+        if not self.has_vectors:
             raise RuntimeError('Index Build Error: No Vectors')
 
         self.has_index = True
@@ -60,7 +60,7 @@ class FaissIvfIndex(BaseIndex):
     def set_build_params(self, nlist):
         self.nlist = nlist
 
-        if self.has_data:
+        if self.has_vectors:
             self.build()
 
     def set_search_params(self, nprobe, k=8):
@@ -71,6 +71,9 @@ class FaissIvfIndex(BaseIndex):
             self.index.nprobe(self.nprobe)
 
     def get_search_vis_data(self, p):
+        if not self.has_index:
+            return None
+            
         index = self.index
 
         target = np.array([p], dtype='float32')
