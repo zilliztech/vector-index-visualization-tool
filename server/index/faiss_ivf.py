@@ -24,8 +24,10 @@ class FaissIvfIndex(BaseIndex):
 
         self.has_index = True
         self.index = faiss.index_factory(self.dim, 'IVF%s,Flat' % self.nlist)
-        self.index.train(self.vectors)
-        self.index.add(self.vectors)
+        
+        train_vectors = np.array(self.vectors, dtype='float32')
+        self.index.train(train_vectors)
+        self.index.add(train_vectors)
 
         self.index.nprobe = self.nprobe
 
@@ -78,11 +80,11 @@ class FaissIvfIndex(BaseIndex):
 
         target = np.array([p], dtype='float32')
         _, _fine_ids = index.search(target, self.k)
-        fine_ids = _fine_ids[0]
+        fine_ids = [int(id) for id in _fine_ids[0]]
 
         nprobe_k = min(self.max_nlist_size * index.nprobe, index.ntotal)
         _, _nprobe_k_ids = index.search(target, nprobe_k)
-        nprobe_k_ids = _nprobe_k_ids[0]
+        nprobe_k_ids = [int(id) for id in _nprobe_k_ids[0]]
         nprobe_list_ids = list({
             self.vector_id2list_id[id]
             for id in nprobe_k_ids if id >= 0
@@ -97,12 +99,12 @@ class FaissIvfIndex(BaseIndex):
 
         vis_data_nlist = {
             'entry_ids': [],
-            'fine_ids': nprobe_k_ids.tolist(),
+            'fine_ids': nprobe_list_ids,
             'links': [],
             'nodes': [
                 {
                     'id': 'centroid-%s' % i,
-                    'projection': self.centroid_projection[i].tolist(),
+                    'projection': self.centroids_projections[i].tolist(),
                     'type': NodeType.Fine if i in nprobe_list_ids else NodeType.Coarse
                 }
                 for i in range(index.nlist)
@@ -129,7 +131,7 @@ class FaissIvfIndex(BaseIndex):
                                 for list_id in nprobe_list_ids]
             fit_vectors = coarse_vectors + coarse_centroids
 
-        node_projections = projection.get_projections(fit_vectors)
+        node_projections = projection.get_projections(fit_vectors).tolist()
 
         nodes = [
             {

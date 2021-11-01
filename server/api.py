@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask import Flask, request, jsonify, send_from_directory
 import sys
 import os
-# compatibility when run in server
+# compatibility when run in 'server/'
 server_dir = 'server'
 if server_dir in os.path.basename(os.getcwd()):
     sys.path.append('./index')
@@ -35,35 +35,35 @@ def set_data():
     return jsonify(successMsg)
 
 
-@app.route("set_index_type")
+@app.route("/set_index_type")
 def set_index_type():
     index_type = request.args.get('index_type', 'hnsw')
     index.set_index_type(index_type)
     return jsonify(successMsg)
 
 
-@app.route("set_build_params")
+@app.route("/set_build_params")
 def set_build_params():
     params = json.loads(request.args.get('params', "{}"))
     index.set_build_params(params)
     return jsonify(successMsg)
 
 
-@app.route("set_search_params")
+@app.route("/set_search_params")
 def set_search_params():
     params = json.loads(request.args.get('params', "{}"))
     index.set_search_params(params)
     return jsonify(successMsg)
 
 
-@app.route("search_by_id")
+@app.route("/search_by_id")
 def get_search_vis_data():
-    id = request.args.get('id', 0)
-    index.search_by_id(id)
-    return jsonify(successMsg)
+    id = int(request.args.get('id', 0))
+    res = index.search_by_id(id)
+    return jsonify(res)
 
 
-@app.route("set_projection_method")
+@app.route("/set_projection_method")
 def set_projection_method():
     method = request.args.get('method', 'umap')
     params = json.loads(request.args.get('params', "{}"))

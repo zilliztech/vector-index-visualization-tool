@@ -58,6 +58,7 @@ class HNSWIndex(BaseIndex):
         vis_data = []
 
         fine_ids = labels[0]
+        fine_ids = [int(id) for id in fine_ids]
         visited_record = visited_records[0]
         num_level = len(visited_record)
         entry_id = -1

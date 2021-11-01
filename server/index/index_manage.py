@@ -39,4 +39,6 @@ class Index:
         return self.index.get_search_vis_data(p)
 
     def search_by_id(self, id):
+        # if not self.data.has_data:
+        #     return None
         return self.index.get_search_vis_data(self.data.test_vectors[id])

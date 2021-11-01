@@ -1,3 +1,5 @@
+import json
+import numpy as np
 class Data:
     def __init__(self):
         self.vectors = []
@@ -12,7 +14,7 @@ class Data:
         self.has_data = True
 
         self.keys = [d[key_attr] for d in data]
-        self.vectors = [d[vector_attr] for d in data]
+        self.vectors = [np.array(json.loads(d[vector_attr]), dtype='float32') for d in data]
 
         self.train_keys = self.keys[:-self.test_number]
         self.train_vectors = self.vectors[:-self.test_number]
