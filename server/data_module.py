@@ -1,5 +1,7 @@
 import json
 import numpy as np
+
+
 class Data:
     def __init__(self):
         self.vectors = []
@@ -14,7 +16,8 @@ class Data:
         self.has_data = True
 
         self.keys = [d[key_attr] for d in data]
-        self.vectors = [np.array(json.loads(d[vector_attr]), dtype='float32') for d in data]
+        self.vectors = [
+            np.array(json.loads(d[vector_attr]), dtype='float32') for d in data]
 
         self.train_keys = self.keys[:-self.test_number]
         self.train_vectors = self.vectors[:-self.test_number]
@@ -29,7 +32,7 @@ class Data:
 
     def id2key(self, id):
         if id not in range(len(self.keys)):
-            return -1
+            return id
         else:
             return self.keys[id]
 
@@ -40,8 +43,15 @@ class Data:
         else:
             return self.keys[id]
 
-    def id2key(self, id):
-        if id not in range(len(self.keys)):
-            return -1
-        else:
-            return self.keys[id]
+    def map_keys(self, vis_res):
+        for level_data in vis_res:
+            level_data['entry_ids'] = [self.id2key(
+                id) for id in level_data['entry_ids']]
+            level_data['fine_ids'] = [self.id2key(
+                id) for id in level_data['fine_ids']]
+            for node in level_data['nodes']:
+                # node['auto_id'] = node['id']
+                node['id'] = self.id2key(node['id'])
+            for link in level_data['links']:
+                link['source'] = self.id2key(link['source'])
+                link['target'] = self.id2key(link['target'])

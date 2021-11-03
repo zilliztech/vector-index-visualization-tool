@@ -29,9 +29,11 @@ index = Index()
 @app.route("/set_data", methods=['POST'])
 def set_data():
     fileRead = request.files['file'].stream.read()
+    key_attr = request.form.get('key', 'name')
+    vector_attr = request.form.get('vector', 'vector')
     rows = csv.DictReader(io.StringIO(str(fileRead, encoding="utf-8")))
     data = [row for row in rows]
-    index.set_data(data)
+    index.set_data(data, key_attr, vector_attr)
     return jsonify(successMsg)
 
 

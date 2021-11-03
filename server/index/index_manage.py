@@ -25,8 +25,8 @@ class Index:
         if self.data.has_data:
             self.index.set_vectors(self.data.vectors)
 
-    def set_data(self, data):
-        self.data.set_data(data)
+    def set_data(self, data, key_attr='name', vector_attr='vector'):
+        self.data.set_data(data, key_attr, vector_attr)
         self.index.set_vectors(self.data.train_vectors)
 
     def set_search_params(self, **params):
@@ -36,9 +36,13 @@ class Index:
         self.index.set_build_params(**params)
 
     def get_search_vis_data(self, p):
-        return self.index.get_search_vis_data(p)
+        vis_res = self.index.get_search_vis_data(p)
+        self.data.map_key(vis_res)
+        return vis_res
 
     def search_by_id(self, id):
         # if not self.data.has_data:
         #     return None
-        return self.index.get_search_vis_data(self.data.test_vectors[id])
+        vis_res = self.index.get_search_vis_data(self.data.test_vectors[id])
+        self.data.map_keys(vis_res)
+        return vis_res

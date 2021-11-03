@@ -7,8 +7,6 @@ from project_utils import projection
 
 from custom_types import NodeType, LinkType
 
-fine_search_include_centroids = False
-
 
 class FaissIvfIndex(BaseIndex):
     def __init__(self):
@@ -18,13 +16,15 @@ class FaissIvfIndex(BaseIndex):
 
         self.k = 8
 
+        self.fine_search_include_centroids = False
+
     def build(self):
         if not self.has_vectors:
             raise RuntimeError('Index Build Error: No Vectors')
 
         self.has_index = True
         self.index = faiss.index_factory(self.dim, 'IVF%s,Flat' % self.nlist)
-        
+
         train_vectors = np.array(self.vectors, dtype='float32')
         self.index.train(train_vectors)
         self.index.add(train_vectors)
@@ -126,10 +126,12 @@ class FaissIvfIndex(BaseIndex):
         fit_vectors = coarse_vectors
         coarse_centroids = []
 
-        if fine_search_include_centroids:
+        if self.fine_search_include_centroids:
             coarse_centroids = [self.centroids[list_id]
                                 for list_id in nprobe_list_ids]
             fit_vectors = coarse_vectors + coarse_centroids
+
+        fit_vectors += [p]
 
         node_projections = projection.get_projections(fit_vectors).tolist()
 
@@ -140,10 +142,10 @@ class FaissIvfIndex(BaseIndex):
                 'type': NodeType.Fine if coarse_ids[i] in fine_ids else NodeType.Coarse,
                 'cluster_id': self.vector_id2list_id[coarse_ids[i]]
             }
-            for i in range(len(coarse_vectors))
+            for i in range(len(coarse_ids))
         ]
 
-        if fine_search_include_centroids:
+        if self.fine_search_include_centroids:
             nodes += [
                 {
                     'id': 'centroid-%d' % nprobe_list_ids[i],
@@ -153,6 +155,15 @@ class FaissIvfIndex(BaseIndex):
                 }
                 for i in range(len(coarse_centroids))
             ]
+
+        nodes += [
+            {
+                'id': 'target',
+                'projection': node_projections[-1],
+                'type': NodeType.Target,
+                'cluster_id': -1
+            }
+        ]
 
         vis_data_nprobe = {
             'entry_ids': nprobe_list_ids,
