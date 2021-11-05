@@ -19,8 +19,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     bottom: 0,
     margin: 18,
     borderRadius: 10,
-    boxShadow: "0 0 10px #aaa",
     padding: 10,
+    boxShadow: "0 0 8px #aaa",
   },
   controlView: {
     position: 'absolute',
@@ -29,7 +29,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     top: 0,
     bottom: 0,
     marginLeft: 5,
-    borderLeft: "2px solid #aaa"
+    borderLeft: "2px solid #bbb",
+    boxShadow: "0 0 10px #aaa",
   },
 }));
 
