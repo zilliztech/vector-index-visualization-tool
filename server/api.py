@@ -1,3 +1,4 @@
+from index_manage import Index
 from project_utils import projection
 import json
 import io
@@ -12,7 +13,6 @@ if server_dir in os.path.basename(os.getcwd()):
     sys.path.append('./index')
 else:
     sys.path.append('./server/index')
-from index_manage import Index
 
 
 app = Flask(__name__)
@@ -61,8 +61,13 @@ def set_search_params():
 @app.route("/search_by_id")
 def get_search_vis_data():
     id = int(request.args.get('id', 0))
-    res = index.search_by_id(id)
-    return jsonify(res)
+    try:
+        res = index.search_by_id(id)
+        msg = 'ok'
+    except:
+        res = {}
+        msg = 'failed'
+    return jsonify({'data': res, 'msg': msg})
 
 
 @app.route("/set_projection_method")
