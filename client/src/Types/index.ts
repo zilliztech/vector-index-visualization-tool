@@ -43,16 +43,38 @@ export interface IStore {
   indexType: string;
   setIndexType: (indexType: string) => void;
 
+  visTypeList: string[];
+  visType: string;
+  setVisType: (visType: string) => void;
+
   targetId: number;
   setTargetId: (targetId: number) => void;
 
   setData: (file: File) => void;
+  buildParams: { [key: string]: string | number };
+  searchParams: { [key: string]: string | number };
   setBuildParams: (params: { [key: string]: string | number }) => void;
   setSearchParams: (params: { [key: string]: string | number }) => void;
+
+  visParams: { [key: string]: string | number };
   setVisParams: (params: { [key: string]: string | number }) => void;
 
   VisData: ILevel[];
 
   searchById: () => void;
   searchStatus: string;
+}
+
+export interface IIndexParam {
+  label: string;
+  value: string;
+  type: string;
+  optionLabels?: string[] | number[];
+  optionValues: string[] | number[];
+}
+
+export interface IIndexParams {
+  build: IIndexParam[];
+  search: IIndexParam[];
+  vis: IIndexParam[];
 }

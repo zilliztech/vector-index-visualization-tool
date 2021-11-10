@@ -32,17 +32,17 @@ class HNSWIndex(BaseIndex):
         self.index.set_ef(self.ef)
         self.index.set_num_threads(self.num_threads)
 
-    def set_build_params(self, ef_construction, M):
-        self.ef_construction = ef_construction
-        self.M = M
+    def set_build_params(self, params):
+        self.ef_construction = params.get('ef_construction', self.ef_construction)
+        self.M = params.get('M', self.M)
 
         if self.has_vectors:
             self.build()
 
-    def set_search_params(self, ef=16, k=8, num_threads=4):
-        self.ef = ef
-        self.num_threads = num_threads
-        self.k = k
+    def set_search_params(self, params):
+        self.ef = params.get('ef', self.ef)
+        self.num_threads = params.get('num_threads', self.num_threads)
+        self.k = params.get('k', self.k)
 
         if self.has_index:
             self.index.set_ef(self.ef)

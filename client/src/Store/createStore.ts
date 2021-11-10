@@ -12,13 +12,29 @@ import { ILevel, IStore } from "Types";
 
 const indexTypes = ["ivf_flat", "hnsw"];
 
+const visTypeOptions = {
+  hnsw: ["force", "force-dist"],
+  ivf_flat: ["project", "voronoi"],
+} as { [key: string]: string[] };
+
+const defaultIndexType = "hnsw";
+const defaultVisType = visTypeOptions[defaultIndexType][0];
+
 const createStore = () => {
   return {
     indexTypeList: indexTypes,
-    indexType: "hnsw",
-    setIndexType(typeIndex: string) {
-      this.indexType = typeIndex;
-      set_index_type(typeIndex);
+    indexType: defaultIndexType,
+    setIndexType(indexType: string) {
+      this.indexType = indexType;
+      this.visType = visTypeOptions[indexType][0];
+      set_index_type(indexType);
+    },
+    visType: defaultVisType,
+    get visTypeList() {
+      return visTypeOptions[this.indexType];
+    },
+    setVisType(visType: string) {
+      this.visType = visType;
     },
 
     targetId: 0,
@@ -30,14 +46,26 @@ const createStore = () => {
     async setData(file: File) {
       set_data(file);
     },
+    buildParams: {},
     async setBuildParams(params: { [key: string]: string | number }) {
+      this.buildParams = Object.assign({}, this.buildParams, params)
       set_index_build_params(params);
     },
+    searchParams: {},
     async setSearchParams(params: { [key: string]: string | number }) {
+      this.searchParams = Object.assign({}, this.searchParams, params)
       set_index_search_params(params);
     },
+
+    visParams: {
+      project_method: "",
+      project_params: "",
+    },
     async setVisParams(params: { [key: string]: string | number }) {
-      set_index_vis_params(params);
+      for (let key in params) {
+        this.visParams[key] = params[key];
+      }
+      set_index_vis_params(this.visParams)
     },
 
     VisData: [] as ILevel[],

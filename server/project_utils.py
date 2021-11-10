@@ -31,7 +31,8 @@ class Projection:
             }
             self.fit = umap.UMAP(**self.umap_params).fit_transform
         else:
-            raise RuntimeError('Projection Error: Not supported method')
+            pass
+            # raise RuntimeError('Projection Error: Not supported method')
 
 
 projection = Projection()

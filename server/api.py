@@ -1,4 +1,3 @@
-from index_manage import Index
 from project_utils import projection
 import json
 import io
@@ -13,6 +12,7 @@ if server_dir in os.path.basename(os.getcwd()):
     sys.path.append('./index')
 else:
     sys.path.append('./server/index')
+from index_manage import Index
 
 
 app = Flask(__name__)
@@ -34,12 +34,15 @@ def set_data():
     rows = csv.DictReader(io.StringIO(str(fileRead, encoding="utf-8")))
     data = [row for row in rows]
     index.set_data(data, key_attr, vector_attr)
+
+    print('Set Data')
     return jsonify(successMsg)
 
 
 @app.route("/set_index_type")
 def set_index_type():
-    index_type = request.args.get('index_type', 'hnsw')
+    index_type = json.loads(request.args.get('index_type', 'hnsw'))
+    print('Set index type:', index_type)
     index.set_index_type(index_type)
     return jsonify(successMsg)
 
@@ -47,6 +50,7 @@ def set_index_type():
 @app.route("/set_build_params")
 def set_build_params():
     params = json.loads(request.args.get('params', "{}"))
+    print('Set build params:', params)
     index.set_build_params(params)
     return jsonify(successMsg)
 
@@ -54,13 +58,14 @@ def set_build_params():
 @app.route("/set_search_params")
 def set_search_params():
     params = json.loads(request.args.get('params', "{}"))
+    print('Set search params:', params)
     index.set_search_params(params)
     return jsonify(successMsg)
 
 
 @app.route("/search_by_id")
 def get_search_vis_data():
-    id = int(request.args.get('id', 0))
+    id = json.loads(request.args.get('id', 0))
     try:
         res = index.search_by_id(id)
         msg = 'ok'
@@ -70,11 +75,15 @@ def get_search_vis_data():
     return jsonify({'data': res, 'msg': msg})
 
 
-@app.route("/set_projection_method")
-def set_projection_method():
-    method = request.args.get('method', 'umap')
+@app.route("/set_vis_params")
+def set_vis_params():
     params = json.loads(request.args.get('params', "{}"))
-    projection.set_method(method, params)
+    print('Set vis params:', params)
+    project_method = params.get('project_method', '')
+    if len(project_method) == 0:
+        project_method = 'umap'
+    project_params = params.get('project_params', "{}")
+    projection.set_method(project_method, project_params)
     return jsonify(successMsg)
 
 

@@ -12,7 +12,8 @@ import {
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     formControl: {
-      // margin: theme.spacing(1),
+      marginRight: theme.spacing(3),
+      marginBottom: theme.spacing(1),
       minWidth: 120,
     },
   })
@@ -23,16 +24,21 @@ const CustomSelect = ({
   value,
   setValue,
   options,
+  labels = [],
 }: {
   label: string;
   value: number | string;
   setValue: (arg: any) => void;
   options: any[];
+  labels?: any[];
 }) => {
   const classes = useStyles();
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setValue(event.target.value);
   };
+  if (labels.length === 0) {
+    labels = options;
+  }
   return (
     <FormControl className={classes.formControl}>
       {label === "" || (
@@ -44,9 +50,9 @@ const CustomSelect = ({
         value={value}
         onChange={handleChange}
       >
-        {options.map((value: any) => (
+        {options.map((value: any, i) => (
           <MenuItem key={value} value={value}>
-            {value}
+            {labels[i]}
           </MenuItem>
         ))}
       </Select>

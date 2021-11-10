@@ -59,18 +59,18 @@ class FaissIvfIndex(BaseIndex):
         self.vector_id2list_id = vector_id2list_id
         self.max_nlist_size = max_nlist_size
 
-    def set_build_params(self, nlist):
-        self.nlist = nlist
+    def set_build_params(self, params):
+        self.nlist = params.get('nlist', self.nlist)
 
         if self.has_vectors:
             self.build()
 
-    def set_search_params(self, nprobe, k=8):
-        self.nprobe = nprobe
-        self.k = k
+    def set_search_params(self, params):
+        self.nprobe = params.get('nprobe', self.nprobe)
+        self.k = params.get('k', self.k)
 
         if self.has_index:
-            self.index.nprobe(self.nprobe)
+            self.index.nprobe = self.nprobe
 
     def get_search_vis_data(self, p):
         if not self.has_index:
@@ -99,7 +99,7 @@ class FaissIvfIndex(BaseIndex):
 
         vis_data_nlist = {
             'entry_ids': [],
-            'fine_ids': nprobe_list_ids,
+            'fine_ids': ['centroid-%s' % id for id in nprobe_list_ids],
             'links': [],
             'nodes': [
                 {
@@ -166,7 +166,7 @@ class FaissIvfIndex(BaseIndex):
         ]
 
         vis_data_nprobe = {
-            'entry_ids': nprobe_list_ids,
+            'entry_ids': ['centroid-%s' % id for id in nprobe_list_ids],
             'fine_ids': list(fine_ids),
             'nodes': nodes,
             'links': []

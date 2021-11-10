@@ -29,11 +29,11 @@ class Index:
         self.data.set_data(data, key_attr, vector_attr)
         self.index.set_vectors(self.data.train_vectors)
 
-    def set_search_params(self, **params):
-        self.index.set_search_params(**params)
+    def set_search_params(self, params):
+        self.index.set_search_params(params)
 
-    def set_build_params(self, **params):
-        self.index.set_build_params(**params)
+    def set_build_params(self, params):
+        self.index.set_build_params(params)
 
     def get_search_vis_data(self, p):
         vis_res = self.index.get_search_vis_data(p)

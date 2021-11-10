@@ -8,7 +8,12 @@ const fetchData = (
   params: { [key: string]: string | number | object } = {}
 ) => {
   const getUrl =
-    baseUrl + url + (url.includes("?") ? "&" : "?") + qs.stringify(params);
+    baseUrl +
+    url +
+    (url.includes("?") ? "&" : "?") +
+    Object.keys(params)
+      .map((key: string) => `${key}=${JSON.stringify(params[key])}`)
+      .join("&");
   return new Promise((resolve, reject) => {
     fetch(getUrl)
       .then((res) => res.json())
@@ -27,10 +32,10 @@ export const set_data = (file: File) => {
   }).then((res) => res.json());
 };
 
-export const set_index_type = (indexType: string) => {
+export const set_index_type = (index_type: string) => {
   const url = "set_index_type";
   return fetchData(url, {
-    indexType,
+    index_type,
   });
 };
 
@@ -51,8 +56,8 @@ export const set_index_search_params = (
 export const set_index_vis_params = (
   params: { [key: string]: string | number } = {}
 ) => {
-  const url = "set_projection_method";
-  return fetchData(url, params);
+  const url = "set_vis_params";
+  return fetchData(url, { params });
 };
 
 export const search_by_id = (id: number) => {

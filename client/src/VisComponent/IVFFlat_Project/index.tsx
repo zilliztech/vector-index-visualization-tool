@@ -1,13 +1,10 @@
 import React from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
-import VisComponent from "VisComponent";
 
-const MainView = observer(() => {
+const IVFFlat_Project = observer(() => {
   const store = useGlobalStore();
-  return <div>
-    <VisComponent />
-  </div>;
+  return <div>IVFFlat_Project</div>;
 });
 
-export default MainView;
+export default IVFFlat_Project;

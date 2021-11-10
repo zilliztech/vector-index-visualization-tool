@@ -1,13 +1,10 @@
 import React from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
-import VisComponent from "VisComponent";
 
-const MainView = observer(() => {
+const HNSWForce = observer(() => {
   const store = useGlobalStore();
-  return <div>
-    <VisComponent />
-  </div>;
+  return <div>HNSWForce</div>;
 });
 
-export default MainView;
+export default HNSWForce;
