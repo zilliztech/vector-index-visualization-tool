@@ -105,7 +105,9 @@ class FaissIvfIndex(BaseIndex):
                 {
                     'id': 'centroid-%s' % i,
                     'projection': self.centroids_projections[i].tolist(),
-                    'type': NodeType.Fine if i in nprobe_list_ids else NodeType.Coarse
+                    'type': NodeType.Fine if i in nprobe_list_ids else NodeType.Coarse,
+                    'cluster_id': i,
+                    'count': len(self.list_id2vector_ids[i])
                 }
                 for i in range(index.nlist)
             ] + [

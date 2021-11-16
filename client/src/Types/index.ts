@@ -1,4 +1,5 @@
 export enum NodeType {
+  None = -1,
   Corase = 0,
   Candidate,
   Fine,
@@ -12,12 +13,23 @@ export enum LinkType {
   Fine,
 }
 
+export type TNodeProjection = [number, number];
+
+export interface INodesData {
+  id: string;
+  type: NodeType[];
+  projection: TNodeProjection[];
+  isEntry: boolean[];
+  cluster_id: string[] | number[];
+};
+
 export interface INode {
   id: string;
   type: NodeType;
-  projection?: [number, number];
+  projection?: TNodeProjection;
   dist?: number;
   cluster_id?: number;
+  count?: number;
 }
 
 export interface ILink {
@@ -59,7 +71,7 @@ export interface IStore {
   visParams: { [key: string]: string | number };
   setVisParams: (params: { [key: string]: string | number }) => void;
 
-  VisData: ILevel[];
+  visData: ILevel[];
 
   searchById: () => void;
   searchStatus: string;

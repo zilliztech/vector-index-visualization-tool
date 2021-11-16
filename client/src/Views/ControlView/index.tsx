@@ -95,7 +95,7 @@ const ControlView = observer(() => {
           )
         )}
       </ControlPanel>
-      <ControlPanel header="Visualize">
+      {config.vis.length > 0 && <ControlPanel header="Visualize">
         {config.vis.map((param) =>
           param.type === "select" ? (
             <CustomSelect
@@ -109,7 +109,7 @@ const ControlView = observer(() => {
             <></>
           )
         )}
-      </ControlPanel>
+      </ControlPanel>}
     </div>
   );
 });

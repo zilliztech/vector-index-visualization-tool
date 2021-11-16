@@ -28,6 +28,8 @@ const createStore = () => {
       this.indexType = indexType;
       this.visType = visTypeOptions[indexType][0];
       set_index_type(indexType);
+
+      this.searchStatus = "pending";
     },
     visType: defaultVisType,
     get visTypeList() {
@@ -35,6 +37,7 @@ const createStore = () => {
     },
     setVisType(visType: string) {
       this.visType = visType;
+      this.searchStatus = "pending";
     },
 
     targetId: 0,
@@ -48,12 +51,12 @@ const createStore = () => {
     },
     buildParams: {},
     async setBuildParams(params: { [key: string]: string | number }) {
-      this.buildParams = Object.assign({}, this.buildParams, params)
+      this.buildParams = Object.assign({}, this.buildParams, params);
       set_index_build_params(params);
     },
     searchParams: {},
     async setSearchParams(params: { [key: string]: string | number }) {
-      this.searchParams = Object.assign({}, this.searchParams, params)
+      this.searchParams = Object.assign({}, this.searchParams, params);
       set_index_search_params(params);
     },
 
@@ -65,19 +68,20 @@ const createStore = () => {
       for (let key in params) {
         this.visParams[key] = params[key];
       }
-      set_index_vis_params(this.visParams)
+      set_index_vis_params(this.visParams);
     },
 
-    VisData: [] as ILevel[],
+    visData: [] as ILevel[],
     searchStatus: "ok",
     async searchById() {
+      this.searchStatus = "pending";
       const id = this.targetId;
       console.log("searchById begin", id);
       const res = await search_by_id(id);
       console.log("get search res", res);
       if (res.msg === "ok") {
         runInAction(() => {
-          this.VisData = res.data;
+          this.visData = res.data;
           this.searchStatus = res.msg;
         });
       } else {

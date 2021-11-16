@@ -5,7 +5,7 @@ const useStyles = makeStyles({
   root: {
     paddingTop: 20,
     paddingBottom: 20,
-    paddingLeft: 5,
+    paddingLeft: 8,
     paddingRight: 5,
     marginLeft: 8,
     marginRight: 8,
@@ -18,7 +18,7 @@ const useStyles = makeStyles({
     marginBottom: 8,
   },
   container: {
-    
+
   }
 });
 
