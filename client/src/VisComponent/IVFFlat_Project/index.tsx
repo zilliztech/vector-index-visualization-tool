@@ -41,6 +41,7 @@ const IVFFlat_Project = observer(() => {
             (num) => num
           ) as TNodeProjection
         );
+
         nodesDataDict[node.id].isEntry[level] = entry_ids.indexOf(node.id) >= 0;
         nodesDataDict[node.id].cluster_id[level] = node.cluster_id || -1;
       });
@@ -59,6 +60,7 @@ const IVFFlat_Project = observer(() => {
           ) as TNodeProjection;
         }
 
+        nodesDataDict[node.id].type[level] = node.type;
         nodesDataDict[node.id].isEntry[level] = entry_ids.indexOf(node.id) >= 0;
         nodesDataDict[node.id].cluster_id[level] = node.cluster_id || -1;
       });
@@ -66,8 +68,6 @@ const IVFFlat_Project = observer(() => {
   }
 
   const nodesData = Object.values(nodesDataDict);
-
-  console.log("nodesData", nodesData);
 
   return <View nodesData={nodesData} />;
 });
@@ -77,7 +77,6 @@ export default IVFFlat_Project;
 const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
   const svgId = "ivf_flat_project_svg";
   const { width = 0, height = 0 } = useClientRect({ svgId });
-  console.log("width", width, height);
   const padding = {
     left: 10,
     right: 10,
@@ -85,23 +84,35 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
     bottom: 10,
   };
 
-  const x = d3
-    .scaleLinear()
-    .domain([
-      d3.min(nodesData, (nodeData) => d3.min(nodeData.projection, (p) => p[0])),
-      d3.max(nodesData, (nodeData) => d3.max(nodeData.projection, (p) => p[0])),
-    ] as [number, number])
-    .nice()
-    .range([padding.left, width - padding.right]);
+  const x = d3.range(0, 2).map((level) =>
+    d3
+      .scaleLinear()
+      .domain(
+        d3.extent(
+          nodesData.filter(
+            (nodeData) => nodeData.type[level] !== NodeType.None
+          ),
+          (nodeData) => nodeData.projection[level][0]
+        ) as [number, number]
+      )
+      .nice()
+      .range([padding.left, width - padding.right])
+  );
 
-  const y = d3
-    .scaleLinear()
-    .domain([
-      d3.min(nodesData, (nodeData) => d3.min(nodeData.projection, (p) => p[1])),
-      d3.max(nodesData, (nodeData) => d3.max(nodeData.projection, (p) => p[1])),
-    ] as [number, number])
-    .nice()
-    .range([padding.top, height - padding.bottom]);
+  const y = d3.range(0, 2).map((level) =>
+    d3
+      .scaleLinear()
+      .domain(
+        d3.extent(
+          nodesData.filter(
+            (nodeData) => nodeData.type[level] !== NodeType.None
+          ),
+          (nodeData) => nodeData.projection[level][1]
+        ) as [number, number]
+      )
+      .nice()
+      .range([padding.top, height - padding.bottom])
+  );
 
   const localStore = useLocalObservable(() => ({
     currentLevel: 1,
@@ -110,30 +121,27 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
     },
   }));
 
-  console.log(
-    "y range",
-    d3.min(nodesData, (nodeData) => d3.min(nodeData.projection, (p) => p[1])),
-    d3.max(nodesData, (nodeData) => d3.max(nodeData.projection, (p) => p[1]))
-  );
-  console.log(
-    "???",
-    y,
-    nodesData.filter((node) => node.projection[localStore.currentLevel][1] < 1)
-  );
-
   return (
-    <svg id={svgId} width="100%" height="100%">
+    <svg
+      id={svgId}
+      width="100%"
+      height="100%"
+      style={{
+        transition: "all 1s ease",
+      }}
+    >
       {nodesData.map((node) => (
         <circle
           key={node.id}
           id={node.id}
-          cx={x(node.projection[localStore.currentLevel][0])}
-          cy={y(node.projection[localStore.currentLevel][1])}
+          cx={x[localStore.currentLevel](
+            node.projection[localStore.currentLevel][0]
+          )}
+          cy={y[localStore.currentLevel](
+            node.projection[localStore.currentLevel][1]
+          )}
           r="3"
           fill={"red"}
-          style={{
-            transition: 'all 1s ease'
-          }}
         />
       ))}
       <rect
