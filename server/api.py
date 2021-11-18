@@ -86,6 +86,9 @@ def set_vis_params():
     projection.set_method(project_method, project_params)
     return jsonify(successMsg)
 
+@app.route('/images/<filename>')
+def get_file_by_id(filename):
+    return send_from_directory('/Users/mintian/minmin/data/JPEGImages', filename)
 
 if __name__ == '__main__':
     app.run(debug=False, port=12357)

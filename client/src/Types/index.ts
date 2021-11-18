@@ -21,7 +21,13 @@ export interface INodesData {
   projection: TNodeProjection[];
   isEntry: boolean[];
   cluster_id: string[] | number[];
-};
+
+  color: string[];
+  opacity: number[];
+  size: number[];
+  shape: string[];
+  transition: string[];
+}
 
 export interface INode {
   id: string;
