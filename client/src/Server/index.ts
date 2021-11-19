@@ -65,3 +65,5 @@ export const search_by_id = (id: number) => {
     id,
   }) as Promise<IVisRes>;
 };
+
+export const get_image_url = (name: string) => baseUrl + "images/" + name;

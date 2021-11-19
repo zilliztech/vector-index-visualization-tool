@@ -5,6 +5,7 @@ import { useClientRect } from "Hooks";
 import { INodesData, TNodeProjection, NodeType } from "Types";
 import * as d3 from "d3";
 import { transition } from "d3";
+import { get_image_url } from "Server";
 
 const colors = d3.schemeTableau10;
 
@@ -148,9 +149,14 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
     setCurrentLevel(level: number) {
       this.currentLevel = level;
     },
+    showImage: false,
+    setShowImage() {
+      this.showImage = !this.showImage;
+    },
   }));
 
   const level = localStore.currentLevel;
+  const showImage = localStore.showImage;
 
   const clusterMap = Array.from(
     new Set(
@@ -205,22 +211,60 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
       // 出现
       else {
         nodeData.opacity[level] = 1;
-        nodeData.transition[level] = `opacity ${inTime}s linear ${fadeTime}s, `;
+        nodeData.transition[
+          level
+        ] = `opacity ${inTime}s linear ${translateTime}s, `;
       }
     });
   }
 
   console.log("nodesData", nodesData);
 
-  const node = nodesData[1000];
-  console.log("test", node);
-  console.log(
-    x[level](node.projection[level][0]),
-    y[level](node.projection[level][1])
-  );
-  node.color[level] = 'red'
-  node.opacity[level] = 1
-  console.log('transition', node.transition[level])
+  // image show
+  const showImageNodes = [] as INodesData[];
+  const showP = () => Math.random() < 0.7;
+  const imgWidth = 80;
+  const isCovered = (node: INodesData) =>
+    showImageNodes.some((n) => {
+      return (
+        Math.abs(
+          x[level](node.projection[level][0]) - x[level](n.projection[level][0])
+        ) < imgWidth &&
+        Math.abs(
+          y[level](node.projection[level][1]) - y[level](n.projection[level][1])
+        ) < imgWidth
+      );
+    });
+  const isShowed = (node: INodesData) => {
+    if (node.type[1] === NodeType.Fine) {
+      return true;
+    } else {
+      return !isCovered(node) && showP();
+    }
+  };
+  if (level === 1) {
+    nodesData
+      .filter((nodeData) => nodeData.type[1] === NodeType.Fine)
+      .forEach((nodeData) => {
+        showImageNodes.push(nodeData);
+      });
+    nodesData
+      .filter(
+        (nodeData) =>
+          nodeData.type[1] !== NodeType.Fine && nodeData.id.indexOf(".jpg") >= 0
+      )
+      .forEach((nodeData) => {
+        console.log(nodeData.id);
+        if (isShowed(nodeData)) {
+          console.log("ok", nodeData.id);
+          showImageNodes.push(nodeData);
+        }
+      });
+  }
+  const getOutline = (node: INodesData) => {
+    const borderWidth = node.type[level] === NodeType.Fine ? 3 : 0;
+    return `${borderWidth}pt solid ${node.color[level]}`;
+  };
 
   return (
     <svg id={svgId} width="100%" height="100%">
@@ -238,6 +282,27 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
           }}
         />
       ))}
+      {showImage && (
+        <g>
+          {showImageNodes.map((node) => (
+            <image
+              key={node.id}
+              xlinkHref={get_image_url(node.id)}
+              x={x[level](node.projection[level][0]) - imgWidth / 2}
+              y={y[level](node.projection[level][1]) - imgWidth / 2}
+              height={imgWidth}
+              width={imgWidth}
+              filter={`drop-shadow(0 0 30pt ${node.color[level]})`}
+              style={{
+                outline: getOutline(node),
+                transition: "all 0s ease 10s",
+              }}
+              preserveAspectRatio="xMinYMin slice"
+            />
+          ))}
+        </g>
+      )}
+
       <rect
         x="0"
         y="0"
@@ -253,6 +318,14 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
         height="20"
         fill="#ccc"
         onClick={() => localStore.setCurrentLevel(1)}
+      />
+      <rect
+        x="80"
+        y="0"
+        width="20"
+        height="20"
+        fill="#aaa"
+        onClick={() => localStore.setShowImage()}
       />
     </svg>
   );
