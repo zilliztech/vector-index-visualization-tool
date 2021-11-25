@@ -4,7 +4,6 @@ import { observer, useLocalObservable } from "mobx-react-lite";
 import { useClientRect } from "Hooks";
 import { INodesData, TNodeProjection, NodeType } from "Types";
 import * as d3 from "d3";
-import { transition } from "d3";
 import { get_image_url } from "Server";
 
 const colors = d3.schemeTableau10;
@@ -158,21 +157,28 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
   const level = localStore.currentLevel;
   const showImage = localStore.showImage;
 
-  const clusterMap = Array.from(
-    new Set(
-      nodesData
-        .filter((node) => (node.cluster_id[level] as number) >= 0)
-        .map((node) => node.cluster_id[level])
-    )
-  );
+  if (level === 0) {
+    nodesData.forEach((nodeData) => {
+      const color = nodeData.type[level] === NodeType.Fine ? "#d8b365" : "#ccc";
+      nodeData.color[level] = color;
+    });
+  } else {
+    const clusterMap = Array.from(
+      new Set(
+        nodesData
+          .filter((node) => (node.cluster_id[level] as number) >= 0)
+          .map((node) => node.cluster_id[level])
+      )
+    );
 
-  nodesData.forEach((nodeData) => {
-    const color =
-      nodeData.cluster_id[level] >= 0
-        ? colors[clusterMap.indexOf(nodeData.cluster_id[level])]
-        : "#999";
-    nodeData.color[level] = color;
-  });
+    nodesData.forEach((nodeData) => {
+      const color =
+        nodeData.cluster_id[level] >= 0
+          ? colors[clusterMap.indexOf(nodeData.cluster_id[level])]
+          : "#999";
+      nodeData.color[level] = color;
+    });
+  }
 
   if (level === 1) {
     nodesData.forEach((nodeData) => {
@@ -189,7 +195,8 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
       else {
         nodeData.opacity[level] = 1;
         nodeData.transition[level] =
-          `opacity ${inTime}s linear ${fadeTime}s, ` +
+          `opacity ${inTime}s linear ${0}s, ` +
+          `r ${translateTime}s ease-in-out ${fadeTime + inTime}s, ` +
           `cx ${translateTime}s ease-in-out ${fadeTime + inTime}s, ` +
           `cy ${translateTime}s ease-in-out ${fadeTime + inTime}s`;
       }
@@ -254,9 +261,7 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
           nodeData.type[1] !== NodeType.Fine && nodeData.id.indexOf(".jpg") >= 0
       )
       .forEach((nodeData) => {
-        console.log(nodeData.id);
         if (isShowed(nodeData)) {
-          console.log("ok", nodeData.id);
           showImageNodes.push(nodeData);
         }
       });
@@ -268,7 +273,38 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
 
   return (
     <svg id={svgId} width="100%" height="100%">
-      {nodesData.map((node, i) =>
+      {nodesData
+        .filter((node) => node.type[level] !== NodeType.Target)
+        .map((node, i) => (
+          <circle
+            key={node.id}
+            id={node.id}
+            cx={x[level](node.projection[level][0])}
+            cy={y[level](node.projection[level][1])}
+            r={node.type[level] === NodeType.Fine ? 10 : 3}
+            fill={node.color[level]}
+            opacity={node.opacity[level]}
+            style={{
+              transition: `${node.transition[level]}`,
+            }}
+          />
+        ))}
+      {nodesData
+        .filter((node) => node.type[level] === NodeType.Target)
+        .map((node, i) => (
+          <path
+            d={getStarPath(
+              x[level](node.projection[level][0]),
+              y[level](node.projection[level][1]),
+              30
+            )}
+            fill="#fc8d59"
+            style={{
+              transition: `all 1s ease`,
+            }}
+          />
+        ))}
+      {/* {nodesData.map((node, i) =>
         node.type[level] === NodeType.Target ? (
           <path
             d={getStarPath(
@@ -276,7 +312,7 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
               y[level](node.projection[level][1]),
               30
             )}
-            fill="red"
+            fill="#5ab4ac"
             style={{
               transition: `all 1s ease`,
             }}
@@ -287,7 +323,7 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
             id={node.id}
             cx={x[level](node.projection[level][0])}
             cy={y[level](node.projection[level][1])}
-            r={i === 1000 ? 20 : 3}
+            r={node.type[level] === NodeType.Fine ? 10 : 3}
             fill={node.color[level]}
             opacity={node.opacity[level]}
             style={{
@@ -295,7 +331,7 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
             }}
           />
         )
-      )}
+      )} */}
       {showImage && (
         <g>
           {showImageNodes.map((node) => (
@@ -304,8 +340,12 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
               xlinkHref={get_image_url(node.id)}
               x={x[level](node.projection[level][0]) - imgWidth / 2}
               y={y[level](node.projection[level][1]) - imgWidth / 2}
-              height={imgWidth}
-              width={imgWidth}
+              height={
+                node.type[level] === NodeType.Fine ? imgWidth : imgWidth * 0.6
+              }
+              width={
+                node.type[level] === NodeType.Fine ? imgWidth : imgWidth * 0.6
+              }
               filter={`drop-shadow(0 0 30pt ${node.color[level]})`}
               style={{
                 outline: getOutline(node),

@@ -7,6 +7,7 @@ export enum NodeType {
 }
 
 export enum LinkType {
+  None = -1,
   Visited = 0,
   Extended,
   Searched,
@@ -95,4 +96,8 @@ export interface IIndexParams {
   build: IIndexParam[];
   search: IIndexParam[];
   vis: IIndexParam[];
+}
+
+export interface ILayoutMap {
+  [key: string | number]: [number, number];
 }

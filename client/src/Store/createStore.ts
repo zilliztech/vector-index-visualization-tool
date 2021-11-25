@@ -72,7 +72,7 @@ const createStore = () => {
     },
 
     visData: [] as ILevel[],
-    searchStatus: "ok",
+    searchStatus: "not",
     async searchById() {
       this.searchStatus = "pending";
       const id = this.targetId;

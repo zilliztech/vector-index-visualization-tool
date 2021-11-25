@@ -14,13 +14,13 @@ const params = {
       label: "Top K",
       value: "k",
       type: "select",
-      optionValues: [4, 8, 16, 32],
+      optionValues: [8, 16, 32],
     },
     {
       label: "Nprobe",
       value: "nprobe",
       type: "select",
-      optionValues: [8, 16, 32, 64, 128],
+      optionValues: [4, 8, 16, 32, 64, 128],
     },
   ],
   vis: [

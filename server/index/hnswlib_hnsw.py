@@ -8,7 +8,7 @@ from custom_types import NodeType, LinkType
 
 class HNSWIndex(BaseIndex):
     def __init__(self):
-        self.ef_construction = 80
+        self.ef_construction = 16
         self.M = 16
 
         self.ef = 16
