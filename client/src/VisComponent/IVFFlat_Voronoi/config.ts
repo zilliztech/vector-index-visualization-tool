@@ -20,7 +20,7 @@ const params = {
       label: "Nprobe",
       value: "nprobe",
       type: "select",
-      optionValues: [8, 16, 32, 64, 128],
+      optionValues: [4, 8, 16, 32, 64, 128],
     },
   ],
   vis: [

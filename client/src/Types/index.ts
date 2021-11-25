@@ -39,6 +39,10 @@ export interface INode {
   count?: number;
 }
 
+export interface IIVFNode extends INode {
+  projection: TNodeProjection;
+}
+
 export interface ILink {
   source: string;
   target: string;
