@@ -46,3 +46,10 @@ class Index:
         vis_res = self.index.get_search_vis_data(self.data.test_vectors[id])
         self.data.map_keys(vis_res)
         return vis_res
+    
+    def get_corase_vis_data(self, id):
+        if self.index_type == 'ivf_flat':
+            return self.index.get_corase_vis_data()
+
+        else:
+            return []

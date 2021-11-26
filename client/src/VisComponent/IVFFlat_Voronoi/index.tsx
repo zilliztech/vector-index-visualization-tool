@@ -67,7 +67,9 @@ export const CoarseLevel = ({
   width: number;
   height: number;
 }) => {
-  const nodes = data.nodes as IIVFNode[];
+  const nodes = data.nodes.map((node) =>
+    Object.assign({}, node, { x: 0, y: 0 })
+  ) as IIVFNode[];
 
   const x = d3
     .scaleLinear()
@@ -79,9 +81,14 @@ export const CoarseLevel = ({
     .domain(d3.extent(nodes, (node) => node.projection[1]) as [number, number])
     .nice()
     .range([height, 0]);
+  
+  nodes.forEach((node) => {
+    node.x = x(node.projection[0])
+    node.y = y(node.projection[1])
+  })
 
   const delaunay = d3.Delaunay.from(
-    nodes.map((node: any) => [x(node.projection[0]), y(node.projection[1])])
+    nodes.map((node: any) => [node.x, node.y])
   );
   const voronoi = delaunay.voronoi([0, 0, width, height]);
 
@@ -97,6 +104,8 @@ export const CoarseLevel = ({
       return "#fff";
     }
   };
+
+  console.log(nodes.find(node => node.type === NodeType.Target))
 
   return (
     <g id="coarse-search-g">

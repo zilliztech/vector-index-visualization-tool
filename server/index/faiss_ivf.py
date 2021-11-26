@@ -175,3 +175,26 @@ class FaissIvfIndex(BaseIndex):
         }
 
         return [vis_data_nlist, vis_data_nprobe]
+
+    def get_corase_vis_data(self):
+        if not self.has_index:
+            return None
+
+        index = self.index
+
+        self.centroids_projections = projection.get_projections(
+            self.centroids
+        )
+
+        # todo: nearest id / random id
+        coarse_vis_data = [
+            {
+                'id': 'centroid-%s' % i,
+                'count': len(self.list_id2vector_ids[i]),
+                'projection': self.centroids_projections[i].tolist(),
+
+            }
+            for i in range(index.nlist)
+        ]
+
+        return coarse_vis_data

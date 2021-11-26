@@ -41,6 +41,8 @@ export interface INode {
 
 export interface IIVFNode extends INode {
   projection: TNodeProjection;
+  x: number;
+  y: number;
 }
 
 export interface ILink {

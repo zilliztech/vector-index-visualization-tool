@@ -1,3 +1,4 @@
+from index_manage import Index
 from project_utils import projection
 import json
 import io
@@ -12,7 +13,6 @@ if server_dir in os.path.basename(os.getcwd()):
     sys.path.append('./index')
 else:
     sys.path.append('./server/index')
-from index_manage import Index
 
 
 app = Flask(__name__)
@@ -75,6 +75,12 @@ def get_search_vis_data():
     return jsonify({'data': res, 'msg': msg})
 
 
+@app.route("/get_corase_vis_data")
+def get_corase_vis_data():
+    res = index.get_corase_vis_data()
+    return jsonify({'data': res, 'msg': 'ok'})
+
+
 @app.route("/set_vis_params")
 def set_vis_params():
     params = json.loads(request.args.get('params', "{}"))
@@ -86,9 +92,11 @@ def set_vis_params():
     projection.set_method(project_method, project_params)
     return jsonify(successMsg)
 
+
 @app.route('/images/<filename>')
 def get_file_by_id(filename):
     return send_from_directory('/Users/mintian/minmin/data/JPEGImages', filename)
+
 
 if __name__ == '__main__':
     app.run(debug=False, port=12357)
