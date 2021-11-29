@@ -1,4 +1,3 @@
-from index_manage import Index
 from project_utils import projection
 import json
 import io
@@ -13,6 +12,7 @@ if server_dir in os.path.basename(os.getcwd()):
     sys.path.append('./index')
 else:
     sys.path.append('./server/index')
+from index_manage import Index
 
 
 app = Flask(__name__)

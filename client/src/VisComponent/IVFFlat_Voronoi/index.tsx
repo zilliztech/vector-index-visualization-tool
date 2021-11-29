@@ -5,6 +5,8 @@ import * as d3 from "d3";
 import { ILevel, IIVFNode, NodeType } from "Types";
 import { useClientRect } from "Hooks";
 
+import { getStarPath } from "Utils";
+
 const IVFFlat_Voronoi = observer(() => {
   const store = useGlobalStore();
   const { visData, searchStatus } = store;
@@ -32,7 +34,12 @@ const IVFFlat_Voronoi = observer(() => {
   return (
     <svg id={svgId} width="100%" height="100%">
       {currentLevel === 0 ? (
-        <CoarseLevel data={visData[0]} width={width} height={height} />
+        <CoarseLevel
+          key="coarse-level"
+          data={visData[0]}
+          width={width}
+          height={height}
+        />
       ) : (
         <FineLevel />
       )}
@@ -81,19 +88,22 @@ export const CoarseLevel = ({
     .domain(d3.extent(nodes, (node) => node.projection[1]) as [number, number])
     .nice()
     .range([height, 0]);
-  
+
   nodes.forEach((node) => {
-    node.x = x(node.projection[0])
-    node.y = y(node.projection[1])
-  })
+    node.x = x(node.projection[0]);
+    node.y = y(node.projection[1]);
+  });
+
+  const centroidNodes = nodes.filter((node) => node.type !== NodeType.Target);
+  const targetNodes = nodes.filter((node) => node.type === NodeType.Target);
 
   const delaunay = d3.Delaunay.from(
-    nodes.map((node: any) => [node.x, node.y])
+    centroidNodes.map((node) => [node.x, node.y])
   );
   const voronoi = delaunay.voronoi([0, 0, width, height]);
 
   const paths = {} as { [key: string | number]: string };
-  nodes.forEach((node, i) => {
+  centroidNodes.forEach((node, i) => {
     paths[node.id] = voronoi.renderCell(i);
   });
 
@@ -105,24 +115,28 @@ export const CoarseLevel = ({
     }
   };
 
-  console.log(nodes.find(node => node.type === NodeType.Target))
+  console.log(nodes.find((node) => node.type === NodeType.Target));
 
   return (
     <g id="coarse-search-g">
       <g id="path-g">
-        {nodes
-          // .filter((node) => node.type !== NodeType.Fine)
-          .map((node) => (
-            <path
-              id={node.id}
-              d={paths[node.id]}
-              fill="#ccc"
-              stroke="#fff"
-              strokeWidth="2"
-              opacity="0.6"
-            />
-          ))}
-        {nodes
+        {centroidNodes.map((node) => (
+          <g key={node.id}>
+          <path
+            id={node.id}
+            d={paths[node.id]}
+            fill="#ccc"
+            stroke="#fff"
+            strokeWidth="2"
+            opacity="0.6"
+          />
+          {/* <circle cx={node.x} cy={node.y} r={3} fill="#ccc" /> */}
+          <text x={node.x} y={node.y} transform="translate(0,3)" textAnchor="middle">
+            {node.count}
+          </text>
+          </g>
+        ))}
+        {centroidNodes
           .filter((node) => node.type === NodeType.Fine)
           .map((node) => (
             <path
@@ -135,17 +149,15 @@ export const CoarseLevel = ({
             />
           ))}
       </g>
-      {/* <g id="node-g">
-        {nodes.map((node) => (
-          <circle
-            key={node.id}
-            cx={x(node.projection[0])}
-            cy={y(node.projection[1])}
-            r={2}
-            fill="#aaa"
+      <g id="target">
+        {targetNodes.map((targetNode) => (
+          <path
+            key={targetNode.id}
+            d={getStarPath(targetNode.x, targetNode.y, 30)}
+            fill="#fc8d59"
           />
         ))}
-      </g> */}
+      </g>
     </g>
   );
 };
