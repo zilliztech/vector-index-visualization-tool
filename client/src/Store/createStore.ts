@@ -14,7 +14,7 @@ const indexTypes = ["ivf_flat", "hnsw"];
 
 const visTypeOptions = {
   hnsw: ["force", "force-dist"],
-  ivf_flat: ["project", "voronoi"],
+  ivf_flat: ["project", "voronoi", "voronoi-area"],
 } as { [key: string]: string[] };
 
 const defaultIndexType = "hnsw";
@@ -37,7 +37,7 @@ const createStore = () => {
     },
     setVisType(visType: string) {
       this.visType = visType;
-      this.searchStatus = "pending";
+      // this.searchStatus = "pending";
     },
 
     targetId: 0,

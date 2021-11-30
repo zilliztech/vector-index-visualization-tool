@@ -115,7 +115,7 @@ export const CoarseLevel = ({
     }
   };
 
-  console.log(nodes.find((node) => node.type === NodeType.Target));
+  // console.log(nodes.find((node) => node.type === NodeType.Target));
 
   return (
     <g id="coarse-search-g">

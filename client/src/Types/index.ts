@@ -45,6 +45,16 @@ export interface IIVFNode extends INode {
   y: number;
 }
 
+export interface IIVFVoronoiAreaNode extends INode {
+  projection: TNodeProjection;
+  x: number;
+  y: number;
+  r: number;
+  count: number;
+  countP: number;
+  countArea: number;
+}
+
 export interface ILink {
   source: string;
   target: string;
