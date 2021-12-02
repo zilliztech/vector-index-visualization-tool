@@ -130,10 +130,10 @@ export const CoarseLevel = ({
             strokeWidth="2"
             opacity="0.6"
           />
-          {/* <circle cx={node.x} cy={node.y} r={3} fill="#ccc" /> */}
-          <text x={node.x} y={node.y} transform="translate(0,3)" textAnchor="middle">
+          <circle cx={node.x} cy={node.y} r={3} fill="#666" />
+          {/* <text x={node.x} y={node.y} transform="translate(0,3)" textAnchor="middle">
             {node.count}
-          </text>
+          </text> */}
           </g>
         ))}
         {centroidNodes

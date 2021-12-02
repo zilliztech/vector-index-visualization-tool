@@ -6,7 +6,6 @@ import { ILevel, IIVFVoronoiAreaNode, NodeType } from "Types";
 import { useClientRect } from "Hooks";
 
 import { getStarPath } from "Utils";
-import { timer } from "d3";
 
 const IVFFlat_VoronoiArea = observer(() => {
   const store = useGlobalStore();
@@ -156,17 +155,22 @@ export const CoarseLevel = ({
   height: number;
 }) => {
   const { nodes, finished } = useCoarseNodes({ data, width, height });
+
   if (!finished) {
-    return <g></g>
+    return <g></g>;
   }
 
   const centroidNodes = nodes;
-  const fineNodes = nodes.filter(node => node.type === NodeType.Fine)
-  const targetNodes = data.nodes.filter((node) => node.type === NodeType.Target) as IIVFVoronoiAreaNode[];
-  targetNodes.forEach((targetNode ) => {
-    targetNode.x = fineNodes.reduce((acc, node) => acc + node.x, 0) / fineNodes.length
-    targetNode.y = fineNodes.reduce((acc, node) => acc + node.y, 0) / fineNodes.length
-  })
+  const fineNodes = nodes.filter((node) => node.type === NodeType.Fine);
+  const targetNodes = data.nodes.filter(
+    (node) => node.type === NodeType.Target
+  ) as IIVFVoronoiAreaNode[];
+  targetNodes.forEach((targetNode) => {
+    targetNode.x =
+      fineNodes.reduce((acc, node) => acc + node.x, 0) / fineNodes.length;
+    targetNode.y =
+      fineNodes.reduce((acc, node) => acc + node.y, 0) / fineNodes.length;
+  });
 
   const delaunay = d3.Delaunay.from(
     centroidNodes.map((node) => [node.x, node.y])
@@ -174,6 +178,12 @@ export const CoarseLevel = ({
   const voronoi = delaunay.voronoi([0, 0, width, height]);
 
   const paths = {} as { [key: string | number]: string };
+  const cells = centroidNodes.map((node, i) => [
+    [node.x, node.y],
+    voronoi.cellPolygon(i),
+  ]);
+  const cellCentroids = cells.map(([d, cell]) => d3.polygonCentroid(cell as any));
+
   centroidNodes.forEach((node, i) => {
     paths[node.id] = voronoi.renderCell(i);
   });
@@ -189,7 +199,7 @@ export const CoarseLevel = ({
   return (
     <g id="coarse-search-g">
       <g id="path-g">
-        {centroidNodes.map((node) => (
+        {centroidNodes.map((node, i) => (
           <g key={node.id}>
             <path
               id={node.id}
@@ -199,14 +209,26 @@ export const CoarseLevel = ({
               strokeWidth="3"
               opacity="0.6"
             />
-            <circle
+            {/* <circle
               cx={node.x}
               cy={node.y}
               r={node.r}
               fill="none"
               stroke="#aaa"
-            />
-            <text
+            /> */}
+            {/* <circle
+              cx={node.x}
+              cy={node.y}
+              r={3}
+              fill="#e6550d"
+            /> */}
+            {/* <circle 
+              cx={cellCentroids[i][0]}
+              cy={cellCentroids[i][1]}
+              r={3}
+              fill="#a8ddb5"
+            /> */}
+            {/* <text
               x={node.x}
               y={node.y}
               transform="translate(0,3)"
@@ -214,7 +236,7 @@ export const CoarseLevel = ({
               // fill={node.count > 200 ? "red": "black"}
             >
               {node.count}
-            </text>
+            </text> */}
           </g>
         ))}
         {centroidNodes

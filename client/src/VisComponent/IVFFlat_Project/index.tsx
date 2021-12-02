@@ -141,7 +141,7 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
         ) as [number, number]
       )
       .nice()
-      .range([padding.top, height - padding.bottom])
+      .range([height - padding.bottom, padding.top])
   );
 
   const localStore = useLocalObservable(() => ({
