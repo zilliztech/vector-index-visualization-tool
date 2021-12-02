@@ -12,7 +12,7 @@ const params = {
       label: "M",
       value: "M",
       type: "select",
-      optionValues: [16, 32, 64, 128, 256],
+      optionValues: [4, 8, 16, 32, 64, 128, 256],
     },
   ],
   search: [

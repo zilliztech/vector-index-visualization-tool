@@ -1,8 +1,8 @@
-import hnsw_force_config from "./HNSW_Force/config";
-import hnsw_force_dist_config from "./HNSW_ForceDist/config";
-import ivf_flat_project_config from "./IVFFlat_Project/config";
-import ivf_flat_voronoi_config from "./IVFFlat_Voronoi/config";
-import ivf_flat_voronoi_area_config from "./IVFFlat_VoronoiArea/config";
+import hnsw_force_config from "./HNSWForce/config";
+import hnsw_force_dist_config from "./HNSWForceDist/config";
+import ivf_flat_project_config from "./IVFFlatProject/config";
+import ivf_flat_voronoi_config from "./IVFFlatVoronoi/config";
+import ivf_flat_voronoi_area_config from "./IVFFlatVoronoiArea/config";
 import { IIndexParams } from "Types";
 
 const config = {
