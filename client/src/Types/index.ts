@@ -1,6 +1,6 @@
 export enum NodeType {
   None = -1,
-  Corase = 0,
+  Coarse = 0,
   Candidate,
   Fine,
   Target,

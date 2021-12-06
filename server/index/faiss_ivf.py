@@ -29,9 +29,11 @@ class FaissIvfIndex(BaseIndex):
         self.index.train(train_vectors)
         self.index.add(train_vectors)
 
+        self.init_centroids()
+
         self.index.nprobe = self.nprobe
 
-        self.init_centroids()
+        
 
     def init_centroids(self):
         index = self.index
@@ -58,6 +60,13 @@ class FaissIvfIndex(BaseIndex):
                 vector_id2list_id[vector_id] = list_id
         self.vector_id2list_id = vector_id2list_id
         self.max_nlist_size = max_nlist_size
+
+        list_id2nearest_node = {}
+        index.nprobe = 1
+        for list_id in range(index.nlist):
+            _, _fine_ids = index.search(self.centroids[list_id: list_id+1], 1)
+            list_id2nearest_node[list_id] = int(_fine_ids[0][0])
+        self.list_id2nearest_node = list_id2nearest_node
 
     def set_build_params(self, params):
         self.nlist = params.get('nlist', self.nlist)
@@ -107,7 +116,8 @@ class FaissIvfIndex(BaseIndex):
                     'projection': self.centroids_projections[i].tolist(),
                     'type': NodeType.Fine if i in nprobe_list_ids else NodeType.Coarse,
                     'cluster_id': i,
-                    'count': len(self.list_id2vector_ids[i])
+                    'count': len(self.list_id2vector_ids[i]),
+                    'nearest_node': self.list_id2nearest_node[i]
                 }
                 for i in range(index.nlist)
             ] + [

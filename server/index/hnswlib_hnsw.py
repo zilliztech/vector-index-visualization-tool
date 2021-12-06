@@ -64,7 +64,7 @@ class HNSWIndex(BaseIndex):
         entry_id = -1
 
         for level in range(num_level-1, -1, -1):
-            # the entry of level-k+1 === the fine of level-k
+            # the entry of level[k+1] === the fine of level[k]
             if level < num_level - 1:
                 fine_ids = [entry_id]
 

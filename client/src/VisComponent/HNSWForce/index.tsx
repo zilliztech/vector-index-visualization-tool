@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
-import { LinkType, ILayoutMap, NodeType, ILevel } from "Types";
+import { LinkType, ILayoutMap, NodeType, ILevel, ILink, INode } from "Types";
 import * as d3 from "d3";
 import { useClientRect } from "Hooks";
 // import { CSSTransition, TransitionGroup } from "react-transition-group";
 // import "./index.scss";
 import { toJS } from "mobx";
+import { getStarPath } from "Utils";
 
 const HNSWForce = observer(() => {
   const store = useGlobalStore();
@@ -38,6 +39,43 @@ const HNSWForce = observer(() => {
       setCurrentLevel(currentLevel + 1);
     }
   };
+
+  const getPathStrokeWidth = (link: ILink) => {
+    if (link.type === LinkType.Visited) {
+      return 1;
+    } else if (link.type === LinkType.Extended) {
+      return 3;
+    } else if (link.type === LinkType.Searched) {
+      return 5;
+    } else if (link.type === LinkType.Fine) {
+      return 7;
+    } else {
+      return 100;
+    }
+  };
+  const getPathStroke = (link: ILink) => {
+    if (link.type === LinkType.Visited) {
+      return "#ccc";
+    } else if (link.type === LinkType.Extended) {
+      return "#aaa";
+    } else if (link.type === LinkType.Searched) {
+      return "#888";
+    } else if (link.type === LinkType.Fine) {
+      return "#333";
+    } else {
+      return "red";
+    }
+  };
+  const getNodeColor = (node: INode) => {
+    if (node.type === NodeType.Fine) {
+      return "#5e3c99";
+    } else if (node.type === NodeType.Candidate) {
+      return "#fdb863";
+    } else if (node.type === NodeType.Coarse) {
+      return "#e66101";
+    }
+  };
+
   return (
     <svg
       id={svgId}
@@ -47,17 +85,33 @@ const HNSWForce = observer(() => {
         transition: "all 1s ease",
       }}
     >
+      {visData[currentLevel].links.map((link) => (
+        <path
+          key={`${link.source}-${link.target}`}
+          id={`${link.source}-${link.target}`}
+          d={`M${LayoutMap[link.source][0]},${LayoutMap[link.source][1]}L${
+            LayoutMap[link.target][0]
+          },${LayoutMap[link.target][1]}`}
+          fill="none"
+          stroke={getPathStroke(link)}
+          strokeWidth={getPathStrokeWidth(link)}
+          opacity={0.3}
+        />
+      ))}
+
       {visData[currentLevel].nodes.map((node) => (
         <circle
           key={node.id}
-          id={node.id}
+          id={`${node.id}-${node.dist}}`}
           cx={LayoutMap[node.id][0]}
           cy={LayoutMap[node.id][1]}
           r="3"
-          fill="red"
-          style={{
-            transition: "all 1s ease",
-          }}
+          fill={getNodeColor(node)}
+          style={
+            {
+              // transition: "all 1s ease",
+            }
+          }
         />
       ))}
       <rect x="0" y="0" width="20" height="20" fill="#ccc" onClick={preLevel} />
@@ -108,6 +162,7 @@ const useLevelLayoutMap = ({
     setIsForceFinished(false);
     if (searchStatus === "ok" && width > 0 && height > 0) {
       let levelDataForForce = visData.reverse().map((levelData) => {
+        console.log("levelData", toJS(levelData));
         const nodes = levelData.nodes.map((node) =>
           Object.assign({}, node, { x: 0, y: 0 })
         );
@@ -129,6 +184,16 @@ const useLevelLayoutMap = ({
 
         console.log("nodes and links\n==>", nodes, links);
 
+        const r = d3
+          .scaleLinear()
+          .domain(
+            d3.extent(nodes, (node) =>
+              (node as any).dist > 0 ? node.dist : 0
+            ) as [number, number]
+          )
+          .nice()
+          .range([0, height * 0.5]);
+
         const simulation = d3
           .forceSimulation(nodes)
           .force(
@@ -138,8 +203,22 @@ const useLevelLayoutMap = ({
               .id((d: any) => d.id)
               .strength((d) => 1)
           )
-          .force("charge", d3.forceManyBody())
-          .force("center", d3.forceCenter(width / 2, height / 2));
+          .force(
+            "r",
+            d3
+              .forceRadial(
+                (d) => r(Math.max((d as any).dist || 0, 0)),
+                width / 2,
+                height / 2
+              )
+              .strength(1)
+          )
+          // .force(
+          //   "r",
+          //   d3.forceRadial((d) => r((d as any).dist || 0), 0, 0).strength(1)
+          // )
+          // .force("center", d3.forceCenter(width / 2, height / 2))
+          .force("charge", d3.forceManyBody());
 
         return { nodes, links, simulation };
       });

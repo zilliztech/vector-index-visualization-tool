@@ -52,6 +52,8 @@ class Data:
             for node in level_data['nodes']:
                 # node['auto_id'] = node['id']
                 node['id'] = self.id2key(node['id'])
+                if 'nearest_node' in node:
+                    node['nearest_node'] = self.id2key(node['nearest_node'])
             for link in level_data['links']:
                 link['source'] = self.id2key(link['source'])
                 link['target'] = self.id2key(link['target'])
