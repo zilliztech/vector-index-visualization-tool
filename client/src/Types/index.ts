@@ -14,6 +14,12 @@ export enum LinkType {
   Fine,
 }
 
+export enum LevelStatus {
+  Init = 0,
+  Enter,
+  Exit,
+}
+
 export type TNodeProjection = [number, number];
 
 export interface INodesData {

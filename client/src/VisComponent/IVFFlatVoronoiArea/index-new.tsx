@@ -8,13 +8,12 @@ import {
   IIVFVoronoiAreaFineNode,
   NodeType,
 } from "Types";
-import { useClientRect } from "Hooks";
+import { useClientRect, useLevelStatus } from "Hooks";
 import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
 import ZoomInMapIcon from "@mui/icons-material/ZoomInMap";
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
 
 import { getStarPath } from "Utils";
-import { height } from "@mui/system";
 
 const colorScheme = d3.schemeTableau10;
 
@@ -55,7 +54,7 @@ const IVFFlatVoronoiArea = observer(() => {
 
   return (
     <div className={classes.root}>
-      <svg id={svgId} width="100%" height="100">
+      <svg id={svgId} width="100%" height="100%">
         {fineLevelNodes.map((node) => (
           <circle
             key={node.id}
@@ -196,7 +195,6 @@ const useFineLevelNodes = ({
   useEffect(() => {
     setFineLevelForceFinished(false);
     computeTimer && clearTimeout(computeTimer);
-    console.log('?', searchStatus, coarsLevelForceFinished)
 
     if (
       searchStatus === "ok" &&
@@ -204,26 +202,38 @@ const useFineLevelNodes = ({
       width > 0 &&
       height > 0
     ) {
-      const clusterIdList = Array.from(
-        new Set(data.nodes.map((node) => node.cluster_id))
-      );
-      const origin = [width / 2, height / 2];
-      const maxR = Math.min(width, height);
-      const angleStep = (Math.PI * 2) / clusterIdList.length;
-      const clusterCenterList = clusterIdList.map((_, i) => [
-        origin[0] + (maxR / 2) * Math.sin(angleStep * (i + 0.5)),
-        origin[1] - (maxR / 2) * Math.cos(angleStep * (i + 0.5)),
-      ]);
-      console.log('??', clusterIdList, origin, maxR, angleStep, clusterCenterList)
       const nodes = data.nodes
         .filter((node) => node.type !== NodeType.Target)
         .map((node) =>
           Object.assign({}, node, { x: 0, y: 0, r: 0, color: "#ccc" })
         ) as IIVFVoronoiAreaFineNode[];
+      const clusterIdList = Array.from(
+        new Set(nodes.map((node) => node.cluster_id))
+      );
+      const origin = [width / 2, height / 2];
+      const maxR = Math.min(width, height) * 0.5;
+      const angleStep = (Math.PI * 2) / clusterIdList.length;
+      const clusterCenterList = clusterIdList.map((_, i) => [
+        origin[0] + (maxR / 2) * Math.sin(angleStep * (i + 0.5)),
+        origin[1] - (maxR / 2) * Math.cos(angleStep * (i + 0.5)),
+      ]);
       const r = d3
         .scaleLinear()
-        .domain(d3.extent(nodes, (node) => node.dist) as [number, number])
-        .range([0, maxR]);
+        .domain(
+          [
+            d3.min(
+              nodes.filter((node) => node.dist > 0.001),
+              (node) => node.dist
+            ) as number,
+            (d3.max(nodes, (node) => node.dist) as number) * 0.88,
+          ]
+          // d3.extent(
+          //   nodes.filter((node) => node.dist > 0.001),
+          //   (node) => node.dist
+          // ) as [number, number]
+        )
+        .range([maxR * 0.2, maxR])
+        .clamp(true);
       nodes.forEach((node) => {
         node.r = r(node.dist);
         const clusterOrder = clusterIdList.indexOf(node.cluster_id);
@@ -232,7 +242,10 @@ const useFineLevelNodes = ({
         node.y = clusterCenter[1];
         node.color = colorScheme[clusterOrder];
       });
-      console.log('nodes', nodes.map(node => Object.assign({}, node)))
+      console.log(
+        "nodes",
+        nodes.map((node) => Object.assign({}, node))
+      );
 
       const simulation = d3
         .forceSimulation(nodes)

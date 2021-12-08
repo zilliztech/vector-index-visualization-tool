@@ -33,8 +33,6 @@ class FaissIvfIndex(BaseIndex):
 
         self.index.nprobe = self.nprobe
 
-        
-
     def init_centroids(self):
         index = self.index
         self.centroids = index.quantizer.reconstruct_n(0, index.nlist)
@@ -117,7 +115,8 @@ class FaissIvfIndex(BaseIndex):
                     'type': NodeType.Fine if i in nprobe_list_ids else NodeType.Coarse,
                     'cluster_id': i,
                     'count': len(self.list_id2vector_ids[i]),
-                    'nearest_node': self.list_id2nearest_node[i]
+                    'nearest_node': self.list_id2nearest_node[i],
+                    'dist': float(np.linalg.norm(p - self.centroids[i])),
                 }
                 for i in range(index.nlist)
             ] + [
@@ -152,7 +151,8 @@ class FaissIvfIndex(BaseIndex):
                 'id': coarse_ids[i],
                 'projection': node_projections[i],
                 'type': NodeType.Fine if coarse_ids[i] in fine_ids else NodeType.Coarse,
-                'cluster_id': self.vector_id2list_id[coarse_ids[i]]
+                'cluster_id': self.vector_id2list_id[coarse_ids[i]],
+                'dist': float(np.linalg.norm(p - np.array(self.vectors[coarse_ids[i]]))),
             }
             for i in range(len(coarse_ids))
         ]
@@ -164,6 +164,7 @@ class FaissIvfIndex(BaseIndex):
                     'projection': node_projections[len(coarse_ids) + i],
                     'type': NodeType.Coarse,
                     'cluster_id': nprobe_list_ids[i],
+                    'dist': float(np.linalg.norm(p - self.centroids[nprobe_list_ids[i]])),
                 }
                 for i in range(len(coarse_centroids))
             ]
@@ -173,7 +174,8 @@ class FaissIvfIndex(BaseIndex):
                 'id': 'target',
                 'projection': node_projections[-1],
                 'type': NodeType.Target,
-                'cluster_id': -1
+                'cluster_id': -1,
+                'dist': 0,
             }
         ]
 
