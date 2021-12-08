@@ -24,14 +24,18 @@ export const useLevelStatus = ({
     status: LevelStatus.Init,
   });
 
+  const [isInited, setIsInited] = useState(false);
+
   const initLevel = () => {
-    setTimeout(() => {
-      setLevelStatus({
-        level: levelStatus.level,
-        status: LevelStatus.Enter,
-      });
-    }, 0);
-  }
+    isInited ||
+      setTimeout(() => {
+        setIsInited(true);
+        setLevelStatus({
+          level: levelStatus.level,
+          status: LevelStatus.Enter,
+        });
+      }, 0);
+  };
 
   const setPreLevel = () => {
     setLevelStatus({
