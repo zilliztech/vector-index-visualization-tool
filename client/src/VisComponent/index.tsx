@@ -3,7 +3,7 @@ import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import IVFFlatProject from "./IVFFlatProject";
 import IVFFlatVoronoi from "./IVFFlatVoronoi";
-import IVFFlatVoronoiArea from "./IVFFlatVoronoiArea";
+import IVFFlatVoronoiArea from "./IVFFlatVoronoiArea/index-new";
 import HNSWForce from "./HNSWForce";
 import HNSWForceDist from "./HNSWForceDist";
 

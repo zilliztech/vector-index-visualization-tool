@@ -45,6 +45,14 @@ export interface IIVFNode extends INode {
   y: number;
 }
 
+export interface IIVFVoronoiAreaFineNode extends INode {
+  dist: number;
+  x: number;
+  y: number;
+  r: number;
+  color: string;
+}
+
 export interface IIVFVoronoiAreaNode extends INode {
   projection: TNodeProjection;
   x: number;

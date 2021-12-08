@@ -4,6 +4,8 @@ import { observer } from "mobx-react-lite";
 import * as d3 from "d3";
 import { ILevel, IIVFVoronoiAreaNode, NodeType } from "Types";
 import { useClientRect } from "Hooks";
+import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
+import ZoomInMapIcon from "@mui/icons-material/ZoomInMap";
 
 import { getStarPath } from "Utils";
 
@@ -45,11 +47,149 @@ const IVFFlat_VoronoiArea = observer(() => {
         fill="#ccc"
         onClick={() => setCurrentLevel(1)}
       /> */}
+      <g
+        id="stepper"
+        transform={`translate(${width - 50}, ${10})`}
+        style={{
+          cursor: "pointer",
+        }}
+        onClick={() => setCurrentLevel(1 - currentLevel)}
+      >
+        <rect width="30" height="30" fill="#fff" />
+        {currentLevel === 0 ? (
+          <ZoomOutMapIcon width="30" height="30" />
+        ) : (
+          <ZoomInMapIcon width="30" height="30" />
+        )}
+      </g>
     </svg>
   );
 });
 
 export default IVFFlat_VoronoiArea;
+
+export const CoarseLevel = ({
+  data,
+  width,
+  height,
+}: {
+  data: ILevel;
+  width: number;
+  height: number;
+}) => {
+  const { nodes, finished } = useCoarseNodes({ data, width, height });
+
+  if (!finished) {
+    return <g></g>;
+  }
+
+  const centroidNodes = nodes;
+  const fineNodes = nodes.filter((node) => node.type === NodeType.Fine);
+  const targetNodes = data.nodes.filter(
+    (node) => node.type === NodeType.Target
+  ) as IIVFVoronoiAreaNode[];
+  targetNodes.forEach((targetNode) => {
+    targetNode.x =
+      fineNodes.reduce((acc, node) => acc + node.x, 0) / fineNodes.length;
+    targetNode.y =
+      fineNodes.reduce((acc, node) => acc + node.y, 0) / fineNodes.length;
+  });
+
+  const delaunay = d3.Delaunay.from(
+    centroidNodes.map((node) => [node.x, node.y])
+  );
+  const voronoi = delaunay.voronoi([0, 0, width, height]);
+
+  const paths = {} as { [key: string | number]: string };
+  const cells = centroidNodes.map((node, i) => [
+    [node.x, node.y],
+    voronoi.cellPolygon(i),
+  ]);
+  const cellCentroids = cells.map(([d, cell]) =>
+    d3.polygonCentroid(cell as any)
+  );
+
+  centroidNodes.forEach((node, i) => {
+    paths[node.id] = voronoi.renderCell(i);
+  });
+
+  const stroke = (node: IIVFVoronoiAreaNode) => {
+    if (node.type === NodeType.Fine) {
+      return "#43a2ca";
+    } else {
+      return "#fff";
+    }
+  };
+
+  return (
+    <g id="coarse-search-g">
+      <g id="path-g">
+        {centroidNodes.map((node, i) => (
+          <g key={node.id}>
+            <path
+              id={node.id}
+              d={paths[node.id]}
+              fill="#ccc"
+              stroke="#fff"
+              strokeWidth="3"
+              opacity="0.6"
+            />
+            {/* <circle
+              cx={node.x}
+              cy={node.y}
+              r={node.r}
+              fill="none"
+              stroke="#aaa"
+            /> */}
+            {/* <circle
+              cx={node.x}
+              cy={node.y}
+              r={3}
+              fill="#e6550d"
+            /> */}
+            {/* <circle 
+              cx={cellCentroids[i][0]}
+              cy={cellCentroids[i][1]}
+              r={3}
+              fill="#a8ddb5"
+            /> */}
+            {/* <text
+              x={node.x}
+              y={node.y}
+              transform="translate(0,3)"
+              textAnchor="middle"
+              // fill={node.count > 200 ? "red": "black"}
+            >
+              {node.count}
+            </text> */}
+          </g>
+        ))}
+        {centroidNodes
+          .filter((node) => node.type === NodeType.Fine)
+          .map((node) => (
+            <path
+              key={node.id}
+              id={node.id}
+              d={paths[node.id]}
+              fill="none"
+              stroke={stroke(node)}
+              strokeWidth="3"
+              opacity="1"
+            />
+          ))}
+      </g>
+      <g id="target">
+        {targetNodes.map((targetNode) => (
+          <path
+            key={targetNode.id}
+            d={getStarPath(targetNode.x, targetNode.y, 40)}
+            fill="#fc8d59"
+          />
+        ))}
+      </g>
+    </g>
+  );
+};
 
 const useCoarseNodes = ({
   data,
@@ -143,127 +283,6 @@ const useCoarseNodes = ({
   }, [data, width, height]);
 
   return { finished, nodes: coarseNodes };
-};
-
-export const CoarseLevel = ({
-  data,
-  width,
-  height,
-}: {
-  data: ILevel;
-  width: number;
-  height: number;
-}) => {
-  const { nodes, finished } = useCoarseNodes({ data, width, height });
-
-  if (!finished) {
-    return <g></g>;
-  }
-
-  const centroidNodes = nodes;
-  const fineNodes = nodes.filter((node) => node.type === NodeType.Fine);
-  const targetNodes = data.nodes.filter(
-    (node) => node.type === NodeType.Target
-  ) as IIVFVoronoiAreaNode[];
-  targetNodes.forEach((targetNode) => {
-    targetNode.x =
-      fineNodes.reduce((acc, node) => acc + node.x, 0) / fineNodes.length;
-    targetNode.y =
-      fineNodes.reduce((acc, node) => acc + node.y, 0) / fineNodes.length;
-  });
-
-  const delaunay = d3.Delaunay.from(
-    centroidNodes.map((node) => [node.x, node.y])
-  );
-  const voronoi = delaunay.voronoi([0, 0, width, height]);
-
-  const paths = {} as { [key: string | number]: string };
-  const cells = centroidNodes.map((node, i) => [
-    [node.x, node.y],
-    voronoi.cellPolygon(i),
-  ]);
-  const cellCentroids = cells.map(([d, cell]) => d3.polygonCentroid(cell as any));
-
-  centroidNodes.forEach((node, i) => {
-    paths[node.id] = voronoi.renderCell(i);
-  });
-
-  const stroke = (node: IIVFVoronoiAreaNode) => {
-    if (node.type === NodeType.Fine) {
-      return "#43a2ca";
-    } else {
-      return "#fff";
-    }
-  };
-
-  return (
-    <g id="coarse-search-g">
-      <g id="path-g">
-        {centroidNodes.map((node, i) => (
-          <g key={node.id}>
-            <path
-              id={node.id}
-              d={paths[node.id]}
-              fill="#ccc"
-              stroke="#fff"
-              strokeWidth="3"
-              opacity="0.6"
-            />
-            {/* <circle
-              cx={node.x}
-              cy={node.y}
-              r={node.r}
-              fill="none"
-              stroke="#aaa"
-            /> */}
-            {/* <circle
-              cx={node.x}
-              cy={node.y}
-              r={3}
-              fill="#e6550d"
-            /> */}
-            {/* <circle 
-              cx={cellCentroids[i][0]}
-              cy={cellCentroids[i][1]}
-              r={3}
-              fill="#a8ddb5"
-            /> */}
-            {/* <text
-              x={node.x}
-              y={node.y}
-              transform="translate(0,3)"
-              textAnchor="middle"
-              // fill={node.count > 200 ? "red": "black"}
-            >
-              {node.count}
-            </text> */}
-          </g>
-        ))}
-        {centroidNodes
-          .filter((node) => node.type === NodeType.Fine)
-          .map((node) => (
-            <path
-              key={node.id}
-              id={node.id}
-              d={paths[node.id]}
-              fill="none"
-              stroke={stroke(node)}
-              strokeWidth="3"
-              opacity="1"
-            />
-          ))}
-      </g>
-      <g id="target">
-        {targetNodes.map((targetNode) => (
-          <path
-            key={targetNode.id}
-            d={getStarPath(targetNode.x, targetNode.y, 40)}
-            fill="#fc8d59"
-          />
-        ))}
-      </g>
-    </g>
-  );
 };
 
 export const FineLevel = () => {
