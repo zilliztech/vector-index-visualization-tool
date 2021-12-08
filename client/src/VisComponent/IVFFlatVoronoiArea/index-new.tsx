@@ -7,6 +7,7 @@ import {
   IIVFVoronoiAreaNode,
   IIVFVoronoiAreaFineNode,
   NodeType,
+  LevelStatus,
 } from "Types";
 import { useClientRect, useLevelStatus } from "Hooks";
 import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
@@ -31,7 +32,6 @@ const IVFFlatVoronoiArea = observer(() => {
   const store = useGlobalStore();
   const classes = useStyles();
   const svgId = "ivf_flat_voronoi_area_svg";
-  const [currentLevel, setCurrentLevel] = useState(0);
   const { visData, searchStatus } = store;
 
   const { width, height } = useClientRect({ svgId });
@@ -52,18 +52,80 @@ const IVFFlatVoronoiArea = observer(() => {
     height,
   });
 
+  const enterTime = 3;
+  const exitTime = 3;
+
+  const { levelStatus, initLevel, setPreLevel, setNextLevel } = useLevelStatus({
+    exitTime: exitTime * 1000,
+  });
+  console.log("levelStatus", levelStatus);
+
+  if (
+    searchStatus === "ok" &&
+    coarsLevelForceFinished &&
+    fineLevelForceFinished
+  ) {
+    initLevel();
+  }
+
+  const changeLevel = () => {
+    if (levelStatus.level === 0) {
+      setNextLevel();
+    } else {
+      setPreLevel();
+    }
+  };
+
   return (
     <div className={classes.root}>
       <svg id={svgId} width="100%" height="100%">
-        {fineLevelNodes.map((node) => (
-          <circle
-            key={node.id}
-            cx={node.x}
-            cy={node.y}
-            r={5}
-            fill={node.color}
-          />
-        ))}
+        {levelStatus.level === 0 ? (
+          <g id="coarse-level"></g>
+        ) : (
+          <g id="fine-level">
+            {fineLevelNodes.map((node) => (
+              <circle
+                key={node.id}
+                cx={
+                  levelStatus.status === LevelStatus.Enter
+                    ? node.x
+                    : node.centroidX
+                }
+                cy={
+                  levelStatus.status === LevelStatus.Enter
+                    ? node.y
+                    : node.centroidY
+                }
+                opacity={0.6}
+                r={5}
+                fill={node.color}
+                style={{
+                  transition: `all ${
+                    levelStatus.status === LevelStatus.Enter
+                      ? enterTime
+                      : exitTime
+                  }s ease`,
+                }}
+              />
+            ))}
+          </g>
+        )}
+
+        <g
+          id="stepper"
+          transform={`translate(${width - 50}, ${10})`}
+          style={{
+            cursor: "pointer",
+          }}
+          onClick={changeLevel}
+        >
+          <rect width="30" height="30" fill="#fff" />
+          {levelStatus.level === 0 ? (
+            <ZoomOutMapIcon width="30" height="30" />
+          ) : (
+            <ZoomInMapIcon width="30" height="30" />
+          )}
+        </g>
       </svg>
     </div>
   );
@@ -202,10 +264,28 @@ const useFineLevelNodes = ({
       width > 0 &&
       height > 0
     ) {
+      const fineCentroidNodes = coarseLevelNodes.filter(
+        (node) => node.type === NodeType.Fine
+      );
+      console.log("fineCentroidNodes", fineCentroidNodes);
+      const clusterId2centroidPos = {} as {
+        [key: string | number]: [number, number];
+      };
+      fineCentroidNodes.forEach((node) => {
+        clusterId2centroidPos[node.cluster_id || 0] = [node.x, node.y];
+      });
+
       const nodes = data.nodes
         .filter((node) => node.type !== NodeType.Target)
         .map((node) =>
-          Object.assign({}, node, { x: 0, y: 0, r: 0, color: "#ccc" })
+          Object.assign({}, node, {
+            x: 0,
+            y: 0,
+            r: 0,
+            color: "#ccc",
+            centroidX: clusterId2centroidPos[node.cluster_id || 0][0],
+            centroidY: clusterId2centroidPos[node.cluster_id || 0][1],
+          })
         ) as IIVFVoronoiAreaFineNode[];
       const clusterIdList = Array.from(
         new Set(nodes.map((node) => node.cluster_id))
@@ -225,7 +305,7 @@ const useFineLevelNodes = ({
               nodes.filter((node) => node.dist > 0.001),
               (node) => node.dist
             ) as number,
-            (d3.max(nodes, (node) => node.dist) as number) * 0.88,
+            (d3.max(nodes, (node) => node.dist) as number) * 0.95,
           ]
           // d3.extent(
           //   nodes.filter((node) => node.dist > 0.001),
@@ -242,10 +322,6 @@ const useFineLevelNodes = ({
         node.y = clusterCenter[1];
         node.color = colorScheme[clusterOrder];
       });
-      console.log(
-        "nodes",
-        nodes.map((node) => Object.assign({}, node))
-      );
 
       const simulation = d3
         .forceSimulation(nodes)

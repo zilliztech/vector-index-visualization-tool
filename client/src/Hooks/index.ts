@@ -13,12 +13,7 @@ export const useClientRect = ({ svgId }: { svgId: string }) => {
   return clientRect;
 };
 
-export const useLevelStatus = ({
-  exitTime = 1000,
-}: {
-  enterTime: number;
-  exitTime: number;
-}) => {
+export const useLevelStatus = ({ exitTime = 1000 }: { exitTime?: number }) => {
   const [levelStatus, setLevelStatus] = useState({
     level: 0,
     status: LevelStatus.Init,
@@ -29,6 +24,7 @@ export const useLevelStatus = ({
   const initLevel = () => {
     isInited ||
       setTimeout(() => {
+        console.log("initLevel");
         setIsInited(true);
         setLevelStatus({
           level: levelStatus.level,
@@ -38,41 +34,45 @@ export const useLevelStatus = ({
   };
 
   const setPreLevel = () => {
+    console.log("setPreLevel");
     setLevelStatus({
       level: levelStatus.level,
       status: LevelStatus.Exit,
     });
     setTimeout(() => {
+      const currentLevel = levelStatus.level;
       setLevelStatus({
-        level: levelStatus.level - 1,
+        level: currentLevel - 1,
         status: LevelStatus.Init,
       });
       setTimeout(() => {
         setLevelStatus({
-          level: levelStatus.level,
+          level: currentLevel - 1,
           status: LevelStatus.Enter,
         });
       }, 0);
     }, exitTime);
   };
-  const setNextLevel = () => {
-    setLevelStatus({
-      level: levelStatus.level,
-      status: LevelStatus.Exit,
-    });
-    setTimeout(() => {
-      setLevelStatus({
-        level: levelStatus.level + 1,
-        status: LevelStatus.Init,
-      });
-      setTimeout(() => {
-        setLevelStatus({
-          level: levelStatus.level,
-          status: LevelStatus.Enter,
-        });
-      }, 0);
-    }, exitTime);
 
-    return { levelStatus, initLevel, setPreLevel, setNextLevel };
+  const setNextLevel = () => {
+    console.log("setNextLevel");
+    setLevelStatus({
+      level: levelStatus.level,
+      status: LevelStatus.Exit,
+    });
+    setTimeout(() => {
+      const currentLevel = levelStatus.level;
+      setLevelStatus({
+        level: currentLevel + 1,
+        status: LevelStatus.Init,
+      });
+      setTimeout(() => {
+        setLevelStatus({
+          level: currentLevel + 1,
+          status: LevelStatus.Enter,
+        });
+      }, 0);
+    }, exitTime);
   };
+  return { levelStatus, initLevel, setPreLevel, setNextLevel };
 };

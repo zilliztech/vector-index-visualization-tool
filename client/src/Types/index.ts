@@ -57,6 +57,9 @@ export interface IIVFVoronoiAreaFineNode extends INode {
   y: number;
   r: number;
   color: string;
+
+  centroidX: number;
+  centroidY: number;
 }
 
 export interface IIVFVoronoiAreaNode extends INode {
