@@ -21,8 +21,17 @@ export const useLevelStatus = ({
 }) => {
   const [levelStatus, setLevelStatus] = useState({
     level: 0,
-    status: LevelStatus.Enter,
+    status: LevelStatus.Init,
   });
+
+  const initLevel = () => {
+    setTimeout(() => {
+      setLevelStatus({
+        level: levelStatus.level,
+        status: LevelStatus.Enter,
+      });
+    }, 0);
+  }
 
   const setPreLevel = () => {
     setLevelStatus({
@@ -60,6 +69,6 @@ export const useLevelStatus = ({
       }, 0);
     }, exitTime);
 
-    return { levelStatus, setPreLevel, setNextLevel };
+    return { levelStatus, initLevel, setPreLevel, setNextLevel };
   };
 };
