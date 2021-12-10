@@ -16,7 +16,7 @@ export const useClientRect = ({ svgId }: { svgId: string }) => {
 export const useLevelStatus = ({ exitTime = 1000 }: { exitTime?: number }) => {
   const [levelStatus, setLevelStatus] = useState({
     level: 0,
-    status: LevelStatus.Init,
+    status: LevelStatus.Enter,
   });
 
   const [isInited, setIsInited] = useState(false);

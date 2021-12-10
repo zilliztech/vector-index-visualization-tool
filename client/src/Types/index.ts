@@ -18,6 +18,7 @@ export enum LevelStatus {
   Init = 0,
   Enter,
   Exit,
+  End,
 }
 
 export type TNodeProjection = [number, number];
@@ -70,6 +71,12 @@ export interface IIVFVoronoiAreaNode extends INode {
   count: number;
   countP: number;
   countArea: number;
+  pathD: string;
+  polygonCentroid: [number, number];
+  polarPolyCentroid: [number, number];
+  translate: [number, number];
+  color: string;
+  polarPathD: string;
 }
 
 export interface ILink {

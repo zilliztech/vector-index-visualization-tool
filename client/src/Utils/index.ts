@@ -35,3 +35,29 @@ export const getPolygon = (x: number, y: number, r: number, n: number) => {
     );
   return `M${points.join("L")}`;
 };
+
+interface IVecComp {
+  x: number;
+  y: number;
+}
+
+export const vecCmp = (vecs: IVecComp[], key: string) => {
+  const center = {
+    x: vecs.reduce((s, a) => s + a.x, 0) / vecs.length,
+    y: vecs.reduce((s, a) => s + a.y, 0) / vecs.length,
+  };
+  vecs.sort((a: IVecComp, b: IVecComp) => {
+    if (a.x >= center.x && b.x < center.x) {
+      return 1;
+    }
+    if (a.x === center.x && b.x === center.x) {
+      return a.y > b.y ? 1 : -1;
+    }
+    const det =
+      (a.x - center.x) * (b.y - center.y) - (b.x - center.x) * (a.y - center.y);
+    return det > 0 ? 1 : -1;
+  });
+  const res = vecs.map((vec) => (vec as any)[key]);
+  res.reverse();
+  return res;
+};
