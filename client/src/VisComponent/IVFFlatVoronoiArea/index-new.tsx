@@ -63,8 +63,8 @@ const IVFFlatVoronoiArea = observer(() => {
     height,
   });
 
-  const enterTime = 3;
-  const exitTime = 3;
+  const enterTime = 1.5;
+  const exitTime = 1;
 
   const { levelStatus, initLevel, setPreLevel, setNextLevel } = useLevelStatus({
     exitTime: exitTime * 1000,
@@ -88,7 +88,7 @@ const IVFFlatVoronoiArea = observer(() => {
 
   return (
     <div className={classes.root}>
-      <svg id={svgId} width="100%" height="100%">
+      <svg id={svgId} width="100%" height="100%" style={{backgroundColor: '#000'}}>
         {levelStatus.level === 0 && (
           <g id="coarse-level">
             {coarseLevelNodes
@@ -97,9 +97,9 @@ const IVFFlatVoronoiArea = observer(() => {
                 <path
                   key={node.id}
                   d={node.pathD}
-                  fill={"#666"}
-                  stroke={"#2FD4A5"}
-                  strokeWidth={"3"}
+                  fill={"#000"}
+                  stroke={"#06F3AF"}
+                  strokeWidth={"1"}
                   opacity={levelStatus.status === LevelStatus.Enter ? 1 : 0}
                   style={{
                     transition: `all ${
@@ -119,7 +119,7 @@ const IVFFlatVoronoiArea = observer(() => {
                     key={node.id}
                     d={node.pathD}
                     fill={"#06F3AF"}
-                    stroke={"#2FD4A5"}
+                    stroke={"#fff"}
                     strokeWidth={"3"}
                     // opacity={1}
                     opacity={levelStatus.status === LevelStatus.Enter ? 1 : 0.9}
@@ -160,7 +160,7 @@ const IVFFlatVoronoiArea = observer(() => {
                     //     : node.pathD
                     // }
                     fill={"#06F3AF"}
-                    stroke={"#2FD4A5"}
+                    stroke={"#fff"}
                     strokeWidth={"3"}
                     opacity={levelStatus.status === LevelStatus.Enter ? 0 : 0.9}
                     transform={`translate(${node.translate})`}
@@ -194,8 +194,8 @@ const IVFFlatVoronoiArea = observer(() => {
                 // opacity={levelStatus.status === LevelStatus.Enter ? 1 : 0.3}
                 opacity={node.type === NodeType.Fine ? 0.9 : 0.5}
                 r={node.type === NodeType.Fine ? 7 : 5}
-                strokeWidth={node.type === NodeType.Fine ? 2 : 0}
-                stroke={"#333"}
+                strokeWidth={node.type === NodeType.Fine ? 1 : 0}
+                stroke={"#fff"}
                 fill={node.color}
                 style={{
                   transition: `all ${

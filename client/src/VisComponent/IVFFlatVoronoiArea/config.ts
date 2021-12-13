@@ -6,7 +6,7 @@ const params = {
       label: "Nlist",
       value: "nlist",
       type: "select",
-      optionValues: [8, 16, 32, 64, 128],
+      optionValues: [64, 128, 256, 512],
     },
   ],
   search: [
