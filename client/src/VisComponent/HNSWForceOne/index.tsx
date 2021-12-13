@@ -19,7 +19,12 @@ const HNSWForceOne = observer(() => {
   });
 
   return (
-    <svg id={svgId} width="100%" height="100%" style={{backgroundColor: "#000"}}>
+    <svg
+      id={svgId}
+      width="100%"
+      height="100%"
+      style={{ backgroundColor: "#000" }}
+    >
       {visData.map((_, level) => (
         <g key={level} id={`level-${level}`}>
           <path
@@ -43,9 +48,10 @@ const useNodeLayout = ({
   height,
   visData,
   searchStatus,
-  xBias = 0.6,
+  xBias = 0.7,
   yBias = 0.7,
   yOver = 0.3,
+  padding = [30, 20],
 }: {
   width: number;
   height: number;
@@ -54,18 +60,24 @@ const useNodeLayout = ({
   xBias?: number;
   yBias?: number;
   yOver?: number;
+  padding?: TCoord;
 }) => {
-  let levelMapCoords = visData.map(_ => []) as TCoord[][];
+  let levelMapCoords = visData.map((_) => []) as TCoord[][];
   if (width > 0 && height > 0 && searchStatus === "ok") {
     const levelCount = visData.length;
-    const levelHeight = height / (levelCount - (levelCount - 1) * yOver);
+    const levelHeight =
+      (height - padding[1] * 2) / (levelCount - (levelCount - 1) * yOver);
     const transform = ([x, y]: TCoord, level: number) => {
       const _x = x / width;
       const _y = y / height;
 
       const newX =
-        width * xBias + _x * width * (1 - xBias) - _y * width * xBias;
+        padding[0] +
+        (width - padding[0] * 2) * xBias +
+        _x * (width - padding[0] * 2) * (1 - xBias) -
+        _y * (width - padding[0] * 2) * xBias;
       const newY =
+        padding[1] +
         levelHeight * (1 - yOver) * level +
         _x * levelHeight * (1 - yBias) +
         _y * levelHeight * yBias;
