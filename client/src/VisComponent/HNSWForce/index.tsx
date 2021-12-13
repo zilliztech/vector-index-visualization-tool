@@ -20,7 +20,7 @@ const HNSWForce = observer(() => {
     visData,
     searchStatus,
     width,
-    height,
+    height: 200,
   });
   console.log("levelDataForForce", levelLayoutMap, isForceFinished);
 

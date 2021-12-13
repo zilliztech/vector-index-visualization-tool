@@ -6,6 +6,7 @@ import IVFFlatVoronoi from "./IVFFlatVoronoi";
 import IVFFlatVoronoiArea from "./IVFFlatVoronoiArea/index-new";
 import HNSWForce from "./HNSWForce";
 import HNSWForceDist from "./HNSWForceDist";
+import HNSWForceOne from "./HNSWForceOne";
 
 const VisComponent = observer(() => {
   const store = useGlobalStore();
@@ -24,6 +25,9 @@ const VisComponent = observer(() => {
   }
   if (visType === 'voronoi-area') {
     return <IVFFlatVoronoiArea />
+  }
+  if (visType === 'force-one') {
+    return <HNSWForceOne />
   }
   return <div>{visType}</div>;
 });

@@ -9,7 +9,7 @@ from custom_types import NodeType, LinkType
 class HNSWIndex(BaseIndex):
     def __init__(self):
         self.ef_construction = 16
-        self.M = 16
+        self.M = 4
 
         self.ef = 16
         self.num_threads = 4

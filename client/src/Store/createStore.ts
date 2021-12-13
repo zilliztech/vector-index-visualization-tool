@@ -13,7 +13,7 @@ import { ILevel, IStore } from "Types";
 const indexTypes = ["ivf_flat", "hnsw"];
 
 const visTypeOptions = {
-  hnsw: ["force", "force-dist"],
+  hnsw: ["force", "force-dist", "force-one"],
   ivf_flat: ["project", "voronoi", "voronoi-area"],
 } as { [key: string]: string[] };
 
