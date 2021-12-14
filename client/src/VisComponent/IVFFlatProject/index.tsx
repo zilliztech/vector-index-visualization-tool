@@ -46,7 +46,7 @@ const IVFFlat_Project = observer(() => {
 
   for (let level = 0; level < visData.length; level++) {
     const levelData = visData[level];
-    const { entry_ids, fine_ids, nodes } = levelData;
+    const { entry_ids, nodes } = levelData;
     if (level === 0) {
       nodes.forEach((node) => {
         nodesDataDict[node.id].type[level] = node.type;
@@ -226,7 +226,7 @@ const View = observer(({ nodesData }: { nodesData: INodesData[] }) => {
     });
   }
 
-  console.log("nodesData", nodesData);
+  // console.log("nodesData", nodesData);
 
   // image show
   const showImageNodes = [] as INodesData[];

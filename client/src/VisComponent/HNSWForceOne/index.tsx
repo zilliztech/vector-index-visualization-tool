@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useEffect, useState } from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import { useClientRect } from "Hooks";
@@ -10,10 +10,14 @@ const HNSWForceOne = observer(() => {
   const { visData, searchStatus } = store;
   const svgId = "hnsw_all_in_one_svg";
   const { width, height } = useClientRect({ svgId });
+  const forceWidth = width;
+  const forceHeight = visData.length > 0 ? height : height / visData.length;
 
-  const { levelMapCoords } = useNodeLayout({
+  const { transform, levelMapCoords } = useTransform({
     width,
     height,
+    forceWidth,
+    forceHeight,
     visData,
     searchStatus,
   });
@@ -27,14 +31,16 @@ const HNSWForceOne = observer(() => {
     >
       {visData.map((_, level) => (
         <g key={level} id={`level-${level}`}>
-          <path
-            id="border"
-            d={`M${levelMapCoords[level]
-              .map((coord) => `${coord}`)
-              .join("L")}Z`}
-            fill="#fff"
-            opacity="0.2"
-          />
+          {levelMapCoords[level].length > 0 && (
+            <path
+              id="border"
+              d={`M${levelMapCoords[level]
+                .map((coord) => `${coord}`)
+                .join("L")}Z`}
+              fill="#fff"
+              opacity="0.2"
+            />
+          )}
         </g>
       ))}
     </svg>
@@ -43,9 +49,70 @@ const HNSWForceOne = observer(() => {
 
 export default HNSWForceOne;
 
-const useNodeLayout = ({
+const useNodeCoordMap = ({
   width,
   height,
+  visData,
+  searchStatus,
+  computeTime = 3000,
+}: {
+  width: number;
+  height: number;
+  visData: ILevel[];
+  searchStatus: string;
+  computeTime?: number;
+}) => {
+  const [nodeCoordMap, setNodeCoordMap] = useState<{ [key: string]: TCoord }>(
+    {}
+  );
+  const [layoutFinished, setLayoutFinished] = useState(false);
+  const [computeTimer, setComputeTimer] = useState<NodeJS.Timeout>();
+
+  useEffect(() => {
+    setLayoutFinished(false);
+    computeTimer && clearTimeout(computeTimer);
+    if (width > 0 && height > 0 && searchStatus === "ok") {
+      const nodeId2dist = {} as { [key: string]: number };
+      visData.forEach((levelData) => {
+        levelData.nodes.forEach((node) => {
+          nodeId2dist[node.id] = node.dist || 0;
+        });
+      });
+      const nodeIds = Object.keys(nodeId2dist);
+      const nodes = nodeIds.map((nodeId) => ({
+        index: nodeId,
+        dist: nodeId2dist[nodeId],
+      }));
+
+      const linkStrings = new Set();
+      const links = [];
+      // de-duplicate
+      visData.forEach((levelData) => {
+        levelData.links.forEach((link) => {
+          if (
+            `${link.source}---${link.target}` in linkStrings ||
+            `${link.target}---${link.source}` in linkStrings
+          ) {
+            console.log("link existed", link);
+          } else {
+            linkStrings.add(`${link.source}---${link.target}`);
+            links.push(link);
+          }
+        });
+      });
+
+      
+    }
+  }, [width, height, visData, searchStatus]);
+
+  return {nodeCoordMap, layoutFinished}
+};
+
+const useTransform = ({
+  width,
+  height,
+  forceWidth,
+  forceHeight,
   visData,
   searchStatus,
   xBias = 0.7,
@@ -55,6 +122,8 @@ const useNodeLayout = ({
 }: {
   width: number;
   height: number;
+  forceWidth: number;
+  forceHeight: number;
   visData: ILevel[];
   searchStatus: string;
   xBias?: number;
@@ -63,13 +132,14 @@ const useNodeLayout = ({
   padding?: TCoord;
 }) => {
   let levelMapCoords = visData.map((_) => []) as TCoord[][];
+  let transform = ([x, y]: TCoord, level: number) => [0, 0] as TCoord;
   if (width > 0 && height > 0 && searchStatus === "ok") {
     const levelCount = visData.length;
     const levelHeight =
       (height - padding[1] * 2) / (levelCount - (levelCount - 1) * yOver);
-    const transform = ([x, y]: TCoord, level: number) => {
-      const _x = x / width;
-      const _y = y / height;
+    transform = ([x, y]: TCoord, level: number) => {
+      const _x = x / forceWidth;
+      const _y = y / forceHeight;
 
       const newX =
         padding[0] +
@@ -84,18 +154,16 @@ const useNodeLayout = ({
       return [newX, newY] as TCoord;
     };
 
-    console.log("transform", transform);
-
     levelMapCoords = visData.map((_, i) =>
       [
         [0, 0],
-        [width, 0],
-        [width, height],
-        [0, height],
+        [forceWidth, 0],
+        [forceWidth, forceHeight],
+        [0, forceHeight],
       ].map((coord) => transform(coord as TCoord, i))
     );
   }
-  return { levelMapCoords };
+  return { transform, levelMapCoords };
 };
 
 export type TCoord = [number, number];

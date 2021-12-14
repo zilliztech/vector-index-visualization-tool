@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import * as d3 from "d3";
@@ -88,7 +88,12 @@ const IVFFlatVoronoiArea = observer(() => {
 
   return (
     <div className={classes.root}>
-      <svg id={svgId} width="100%" height="100%" style={{backgroundColor: '#000'}}>
+      <svg
+        id={svgId}
+        width="100%"
+        height="100%"
+        style={{ backgroundColor: "#000" }}
+      >
         {levelStatus.level === 0 && (
           <g id="coarse-level">
             {coarseLevelNodes
@@ -393,7 +398,7 @@ const useCoarseLevelNodes = ({
         computeTimer && clearTimeout(computeTimer);
       };
     }
-  }, [data, width, height]);
+  }, [data, width, height, searchStatus]);
 
   return { coarsLevelForceFinished, coarseLevelNodes };
 };
