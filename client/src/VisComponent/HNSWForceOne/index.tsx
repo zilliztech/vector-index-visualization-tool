@@ -1,9 +1,10 @@
-import React, { useEffect, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import { useClientRect } from "Hooks";
-import { ILevel, NodeType, LinkType } from "Types";
+import { ILevel, ILink, NodeType, LinkType } from "Types";
 import * as d3 from "d3";
+import { toJS } from "mobx";
 
 const HNSWForceOne = observer(() => {
   const store = useGlobalStore();
@@ -22,6 +23,15 @@ const HNSWForceOne = observer(() => {
     searchStatus,
   });
 
+  const { nodeCoordMap, layoutFinished } = useNodeCoordMap({
+    width: forceWidth,
+    height: forceHeight,
+    visData,
+    searchStatus,
+  });
+
+  
+
   return (
     <svg
       id={svgId}
@@ -29,7 +39,7 @@ const HNSWForceOne = observer(() => {
       height="100%"
       style={{ backgroundColor: "#000" }}
     >
-      {visData.map((_, level) => (
+      {visData.map((levelData, level) => (
         <g key={level} id={`level-${level}`}>
           {levelMapCoords[level].length > 0 && (
             <path
@@ -40,6 +50,56 @@ const HNSWForceOne = observer(() => {
               fill="#fff"
               opacity="0.2"
             />
+          )}
+          {layoutFinished && (
+            <g>
+              <g id="circles-g">
+                {levelData.nodes.map((node) => (
+                  <circle
+                    key={node.id}
+                    cx={transform(nodeCoordMap[node.id], level)[0]}
+                    cy={transform(nodeCoordMap[node.id], level)[1]}
+                    fill="#06F3AF"
+                    r={3}
+                  />
+                ))}
+              </g>
+              <g id="links-g">
+                {levelData.links.map(
+                  (link) =>
+                    link.source in nodeCoordMap &&
+                    link.target in nodeCoordMap && (
+                      <path
+                        key={`link-${link.source}-${link.target}`}
+                        fill="none"
+                        stroke="#ddd"
+                        strokeWidth="1"
+                        d={`M${transform(
+                          nodeCoordMap[link.source],
+                          level
+                        )}L${transform(nodeCoordMap[link.target], level)}`}
+                      />
+                    )
+                )}
+              </g>
+              <g id="entry-fine-links">
+                {d3.range(visData.length - 1).map((level) => (
+                  <path
+                    key={`entry-link-${level}`}
+                    fill="none"
+                    stroke="#ddd"
+                    strokeWidth="1"
+                    d={`M${transform(
+                      nodeCoordMap[visData[level].fine_ids[0]],
+                      level
+                    )}L${transform(
+                      nodeCoordMap[visData[level].fine_ids[0]],
+                      level + 1
+                    )}`}
+                  />
+                ))}
+              </g>
+            </g>
           )}
         </g>
       ))}
@@ -80,12 +140,14 @@ const useNodeCoordMap = ({
       });
       const nodeIds = Object.keys(nodeId2dist);
       const nodes = nodeIds.map((nodeId) => ({
-        index: nodeId,
+        id: nodeId,
         dist: nodeId2dist[nodeId],
+        x: 0,
+        y: 0,
       }));
 
       const linkStrings = new Set();
-      const links = [];
+      const links = [] as ILink[];
       // de-duplicate
       visData.forEach((levelData) => {
         levelData.links.forEach((link) => {
@@ -96,16 +158,57 @@ const useNodeCoordMap = ({
             console.log("link existed", link);
           } else {
             linkStrings.add(`${link.source}---${link.target}`);
-            links.push(link);
+            links.push(toJS(link));
           }
         });
       });
 
-      
+      if (nodeIds.indexOf("target") >= 0) {
+        console.log("??????", nodes);
+      }
+      console.log(nodes.length, links.length);
+      nodes.push({
+        id: "target",
+        dist: 0,
+        x: 0,
+        y: 0,
+      });
+      visData[0].fine_ids.forEach((fine_id) => {
+        links.push({
+          target: "target",
+          source: fine_id,
+          type: LinkType.None,
+        });
+      });
+      console.log(nodes, links);
+
+      const simulation = d3
+        .forceSimulation(nodes)
+        .force(
+          "link",
+          d3
+            .forceLink(links)
+            .id((d) => (d as any).id)
+            .strength(1)
+        )
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("charge", d3.forceManyBody().strength(-80));
+
+      const timer = setTimeout(() => {
+        console.log("force ok~");
+        const coordMap = {} as { [key: string]: TCoord };
+        simulation.stop();
+        nodes.forEach((node) => {
+          coordMap[node.id] = [node.x, node.y];
+        });
+        setNodeCoordMap(coordMap);
+        setLayoutFinished(true);
+      }, computeTime);
+      setComputeTimer(timer);
     }
   }, [width, height, visData, searchStatus]);
 
-  return {nodeCoordMap, layoutFinished}
+  return { nodeCoordMap, layoutFinished };
 };
 
 const useTransform = ({
@@ -165,5 +268,7 @@ const useTransform = ({
   }
   return { transform, levelMapCoords };
 };
+
+
 
 export type TCoord = [number, number];

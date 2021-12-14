@@ -33,7 +33,8 @@ class HNSWIndex(BaseIndex):
         self.index.set_num_threads(self.num_threads)
 
     def set_build_params(self, params):
-        self.ef_construction = params.get('ef_construction', self.ef_construction)
+        self.ef_construction = params.get(
+            'ef_construction', self.ef_construction)
         self.M = params.get('M', self.M)
 
         if self.has_vectors:
@@ -134,4 +135,4 @@ class HNSWIndex(BaseIndex):
 
             vis_data.append(vis_data_level)
 
-        return vis_data
+        return vis_data[::-1]

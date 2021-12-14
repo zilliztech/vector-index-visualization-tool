@@ -161,7 +161,7 @@ const useLevelLayoutMap = ({
     computeTimer && clearTimeout(computeTimer);
     setIsForceFinished(false);
     if (searchStatus === "ok" && width > 0 && height > 0) {
-      let levelDataForForce = visData.reverse().map((levelData) => {
+      let levelDataForForce = visData.map((levelData) => {
         console.log("levelData", toJS(levelData));
         const nodes = levelData.nodes.map((node) =>
           Object.assign({}, node, { x: 0, y: 0 })
