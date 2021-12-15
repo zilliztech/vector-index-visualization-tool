@@ -30,8 +30,6 @@ const HNSWForceOne = observer(() => {
     searchStatus,
   });
 
-  
-
   return (
     <svg
       id={svgId}
@@ -57,6 +55,7 @@ const HNSWForceOne = observer(() => {
                 {levelData.nodes.map((node) => (
                   <circle
                     key={node.id}
+                    id={node.id + '---' + node.dist}
                     cx={transform(nodeCoordMap[node.id], level)[0]}
                     cy={transform(nodeCoordMap[node.id], level)[1]}
                     fill="#06F3AF"
@@ -140,7 +139,7 @@ const useNodeCoordMap = ({
       });
       const nodeIds = Object.keys(nodeId2dist);
       const nodes = nodeIds.map((nodeId) => ({
-        id: nodeId,
+        id: `${nodeId}`,
         dist: nodeId2dist[nodeId],
         x: 0,
         y: 0,
@@ -158,7 +157,12 @@ const useNodeCoordMap = ({
             console.log("link existed", link);
           } else {
             linkStrings.add(`${link.source}---${link.target}`);
-            links.push(toJS(link));
+            // links.push(toJS(link));
+            links.push({
+              source: `${link.source}`,
+              target: `${link.target}`,
+              type: link.type,
+            })
           }
         });
       });
@@ -176,11 +180,11 @@ const useNodeCoordMap = ({
       visData[0].fine_ids.forEach((fine_id) => {
         links.push({
           target: "target",
-          source: fine_id,
+          source: `${fine_id}`,
           type: LinkType.None,
         });
       });
-      console.log(nodes, links);
+      console.log(toJS(visData), nodes, links);
 
       const simulation = d3
         .forceSimulation(nodes)
@@ -201,6 +205,20 @@ const useNodeCoordMap = ({
         nodes.forEach((node) => {
           coordMap[node.id] = [node.x, node.y];
         });
+
+        const x = d3
+          .scaleLinear()
+          .domain(d3.extent(nodes, (node) => node.x) as TCoord)
+          .range([0, width]);
+        const y = d3
+          .scaleLinear()
+          .domain(d3.extent(nodes, (node) => node.y) as TCoord)
+          .range([0, height]);
+
+        nodes.forEach((node) => {
+          coordMap[node.id] = [x(node.x), y(node.y)];
+        });
+
         setNodeCoordMap(coordMap);
         setLayoutFinished(true);
       }, computeTime);
@@ -268,7 +286,5 @@ const useTransform = ({
   }
   return { transform, levelMapCoords };
 };
-
-
 
 export type TCoord = [number, number];

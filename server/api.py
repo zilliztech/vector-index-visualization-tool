@@ -66,6 +66,8 @@ def set_search_params():
 @app.route("/search_by_id")
 def get_search_vis_data():
     id = json.loads(request.args.get('id', 0))
+    # res = index.search_by_id(id)
+    # msg = 'ok'
     try:
         res = index.search_by_id(id)
         msg = 'ok'
@@ -94,7 +96,21 @@ def set_vis_params():
 
 
 @app.route('/images/<filename>')
-def get_file_by_id(filename):
+def get_file_by_name(filename):
+    return send_from_directory('/Users/mintian/minmin/data/JPEGImages', filename)
+
+
+@app.route('/image_id/<fileId>')
+def get_image_by_id(fileId):
+    filename = index.data.id2key(fileId)
+    print(fileId, filename)
+    return send_from_directory('/Users/mintian/minmin/data/JPEGImages', filename)
+
+
+@app.route('/test_id/<fileId>')
+def get_test_file_by_id(fileId):
+    filename = index.data.test_id2key(fileId)
+    print(fileId, filename)
     return send_from_directory('/Users/mintian/minmin/data/JPEGImages', filename)
 
 

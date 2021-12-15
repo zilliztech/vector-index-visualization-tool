@@ -44,7 +44,7 @@ class Index:
         # if not self.data.has_data:
         #     return None
         vis_res = self.index.get_search_vis_data(self.data.test_vectors[id])
-        self.data.map_keys(vis_res)
+        # self.data.map_keys(vis_res)
         return vis_res
     
     def get_corase_vis_data(self, id):

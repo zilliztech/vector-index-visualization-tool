@@ -31,13 +31,14 @@ class Data:
         return self.keys.index(key)
 
     def id2key(self, id):
+        id = int(id)
         if id not in range(len(self.keys)):
             return id
         else:
             return self.keys[id]
 
     def test_id2key(self, _id):
-        id = _id + len(self.train_keys)
+        id = int(_id) + len(self.train_keys)
         if id not in range(len(self.keys)):
             return -1
         else:

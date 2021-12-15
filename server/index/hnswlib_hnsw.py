@@ -56,6 +56,9 @@ class HNSWIndex(BaseIndex):
         labels, distances, visited_records = self.index.knn_query_for_vis([
                                                                           p], k=self.k)
 
+        # print('===>visited_records', visited_records)
+        # print('=====>labels', labels[0])
+
         vis_data = []
 
         fine_ids = labels[0]
@@ -79,7 +82,7 @@ class HNSWIndex(BaseIndex):
 
             for source, target, dist in visited_record_level:
                 # entry
-                if source < 0:
+                if source == target:
                     entry_id = target
                     node_dist[target] = dist
 
@@ -109,7 +112,7 @@ class HNSWIndex(BaseIndex):
                                     LinkType.Searched)
 
             for fine_id in fine_ids:
-                node_type[fine_id] = max(node_type[source], NodeType.Fine)
+                node_type[fine_id] = max(node_type[fine_id], NodeType.Fine)
 
                 t = fine_id
                 s = source_map[t]
