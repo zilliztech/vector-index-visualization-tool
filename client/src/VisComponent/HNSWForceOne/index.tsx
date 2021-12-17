@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import { useClientRect } from "Hooks";
-import { ILevel, ILink, NodeType, LinkType } from "Types";
+import { ILevel, ILink, NodeType, LinkType, ELayoutType } from "Types";
 import * as d3 from "d3";
 import { toJS } from "mobx";
 
@@ -55,7 +55,7 @@ const HNSWForceOne = observer(() => {
                 {levelData.nodes.map((node) => (
                   <circle
                     key={node.id}
-                    id={node.id + '---' + node.dist}
+                    id={node.id + "---" + node.dist}
                     cx={transform(nodeCoordMap[node.id], level)[0]}
                     cy={transform(nodeCoordMap[node.id], level)[1]}
                     fill="#06F3AF"
@@ -114,12 +114,16 @@ const useNodeCoordMap = ({
   visData,
   searchStatus,
   computeTime = 3000,
+  padding = [50, 20],
+  layoutType = ELayoutType.ForceDist,
 }: {
   width: number;
   height: number;
   visData: ILevel[];
   searchStatus: string;
   computeTime?: number;
+  padding?: [number, number];
+  layoutType?: ELayoutType;
 }) => {
   const [nodeCoordMap, setNodeCoordMap] = useState<{ [key: string]: TCoord }>(
     {}
@@ -162,7 +166,7 @@ const useNodeCoordMap = ({
               source: `${link.source}`,
               target: `${link.target}`,
               type: link.type,
-            })
+            });
           }
         });
       });
@@ -174,8 +178,8 @@ const useNodeCoordMap = ({
       nodes.push({
         id: "target",
         dist: 0,
-        x: 0,
-        y: 0,
+        x: width / 2,
+        y: height / 2,
       });
       visData[0].fine_ids.forEach((fine_id) => {
         links.push({
@@ -184,19 +188,54 @@ const useNodeCoordMap = ({
           type: LinkType.None,
         });
       });
+      const maxR = Math.min(width / 2, height / 2);
       console.log(toJS(visData), nodes, links);
 
-      const simulation = d3
-        .forceSimulation(nodes)
-        .force(
-          "link",
-          d3
-            .forceLink(links)
-            .id((d) => (d as any).id)
-            .strength(1)
+      const r = d3
+        .scaleLinear()
+        .domain(
+          d3.extent(
+            nodes.filter((node) => node.dist > 0),
+            (node) => node.dist
+          ) as [number, number]
         )
-        .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("charge", d3.forceManyBody().strength(-80));
+        .range([20, maxR])
+        .clamp(true);
+
+      const simulation =
+        layoutType === ELayoutType.Force
+          ? d3
+              .forceSimulation(nodes)
+              .force(
+                "link",
+                d3
+                  .forceLink(links)
+                  .id((d) => (d as any).id)
+                  .strength(1)
+              )
+              .force("center", d3.forceCenter(width / 2, height / 2))
+              .force("charge", d3.forceManyBody().strength(-10))
+          : d3
+              .forceSimulation(nodes)
+              .force(
+                "link",
+                d3
+                  .forceLink(links)
+                  .id((d) => (d as any).id)
+                  .strength(0.4)
+              )
+              .force(
+                "r",
+                d3
+                  .forceRadial(
+                    (node) => r((node as any).dist),
+                    width / 2,
+                    height / 2
+                  )
+                  .strength(0.6)
+              )
+              // .force("center", d3.forceCenter(width / 2, height / 2))
+              .force("charge", d3.forceManyBody().strength(-10));
 
       const timer = setTimeout(() => {
         console.log("force ok~");
@@ -209,11 +248,11 @@ const useNodeCoordMap = ({
         const x = d3
           .scaleLinear()
           .domain(d3.extent(nodes, (node) => node.x) as TCoord)
-          .range([0, width]);
+          .range([padding[0], width - padding[0]]);
         const y = d3
           .scaleLinear()
           .domain(d3.extent(nodes, (node) => node.y) as TCoord)
-          .range([0, height]);
+          .range([padding[1], height - padding[1]]);
 
         nodes.forEach((node) => {
           coordMap[node.id] = [x(node.x), y(node.y)];
@@ -229,6 +268,7 @@ const useNodeCoordMap = ({
   return { nodeCoordMap, layoutFinished };
 };
 
+// Project: [width, height] => [forceWidth, forceHeight] with bias.
 const useTransform = ({
   width,
   height,
@@ -236,9 +276,9 @@ const useTransform = ({
   forceHeight,
   visData,
   searchStatus,
-  xBias = 0.7,
+  xBias = 0.68,
   yBias = 0.7,
-  yOver = 0.3,
+  yOver = 0.35,
   padding = [30, 20],
 }: {
   width: number;

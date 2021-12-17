@@ -141,3 +141,8 @@ export interface IIndexParams {
 export interface ILayoutMap {
   [key: string | number]: [number, number];
 }
+
+export enum ELayoutType {
+  Force = 0,
+  ForceDist,
+}
