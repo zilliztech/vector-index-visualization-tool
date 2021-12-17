@@ -30,6 +30,15 @@ const HNSWForceOne = observer(() => {
     searchStatus,
   });
 
+  const interLevelGap = 500;
+  const intraLevelGap = 2000;
+  const { nodeShowTime, linkShowTime } = useTransitionTime({
+    visData,
+    searchStatus,
+    interLevelGap,
+    intraLevelGap,
+  });
+
   return (
     <svg
       id={svgId}
@@ -50,27 +59,16 @@ const HNSWForceOne = observer(() => {
             />
           )}
           {layoutFinished && (
-            <g>
-              <g id="circles-g">
-                {levelData.nodes.map((node) => (
-                  <circle
-                    key={node.id}
-                    id={node.id + "---" + node.dist}
-                    cx={transform(nodeCoordMap[node.id], level)[0]}
-                    cy={transform(nodeCoordMap[node.id], level)[1]}
-                    fill="#06F3AF"
-                    r={3}
-                  />
-                ))}
-              </g>
+            <>
               <g id="links-g">
                 {levelData.links.map(
                   (link) =>
                     link.source in nodeCoordMap &&
                     link.target in nodeCoordMap && (
                       <path
-                        key={`link-${link.source}-${link.target}`}
+                        key={`link-${level}-${link.source}-${link.target}`}
                         fill="none"
+                        opacity="0.2"
                         stroke="#ddd"
                         strokeWidth="1"
                         d={`M${transform(
@@ -81,24 +79,32 @@ const HNSWForceOne = observer(() => {
                     )
                 )}
               </g>
-              <g id="entry-fine-links">
-                {d3.range(visData.length - 1).map((level) => (
-                  <path
-                    key={`entry-link-${level}`}
-                    fill="none"
-                    stroke="#ddd"
-                    strokeWidth="1"
-                    d={`M${transform(
-                      nodeCoordMap[visData[level].fine_ids[0]],
-                      level
-                    )}L${transform(
-                      nodeCoordMap[visData[level].fine_ids[0]],
-                      level + 1
-                    )}`}
+              <g id="circles-g">
+                {levelData.nodes.map((node) => (
+                  <circle
+                    key={node.id}
+                    id={`node-${level}-${node.id}`}
+                    cx={transform(nodeCoordMap[node.id], level)[0]}
+                    cy={transform(nodeCoordMap[node.id], level)[1]}
+                    fill="#06F3AF"
+                    r={3}
                   />
                 ))}
               </g>
-            </g>
+              {level > 0 && (
+                <path
+                  key={`intra-level-${level}`}
+                  fill="none"
+                  opacity="0.6"
+                  stroke="#ddd"
+                  strokeWidth="2"
+                  d={`M${transform(
+                    nodeCoordMap[levelData.entry_ids[0]],
+                    level - 1
+                  )}L${transform(nodeCoordMap[levelData.entry_ids[0]], level)}`}
+                />
+              )}
+            </>
           )}
         </g>
       ))}
@@ -325,6 +331,54 @@ const useTransform = ({
     );
   }
   return { transform, levelMapCoords };
+};
+
+const useTransitionTime = ({
+  visData,
+  searchStatus,
+  interLevelGap = 1000,
+  intraLevelGap = 2000,
+}: {
+  visData: ILevel[];
+  searchStatus: string;
+  interLevelGap?: number;
+  intraLevelGap?: number;
+}) => {
+  let currentTime = 0;
+  // key = `${level}-${node.id}`
+  const nodeShowTime = {} as { [key: string]: number };
+  // key = `${level}-${link.source}-${link.target}`
+  const linkShowTime = {} as { [key: string]: number };
+  if (searchStatus === "ok") {
+    visData.forEach((levelData, level) => {
+      const links = levelData.links;
+      links.forEach((link) => {
+        const { source, target } = link;
+        const sourceId = `node-${level}-${source}`;
+        const targetId = `node-${level}-${source}`;
+        const linkId = `link-${level}-${source}-${target}`;
+        if (!(sourceId in nodeShowTime)) {
+          if (level > 0) {
+            currentTime += intraLevelGap;
+            const intraLinkId = `intra-level-${level}`;
+            linkShowTime[intraLinkId] = currentTime;
+          }
+          nodeShowTime[sourceId] = currentTime;
+        }
+        currentTime += interLevelGap;
+        if (!(targetId in nodeShowTime)) {
+          nodeShowTime[targetId] = currentTime;
+        }
+        if (!(linkId in linkShowTime)) {
+          linkShowTime[linkId] = currentTime;
+        } else {
+          console.log("link depulicate", level, link);
+        }
+      });
+    });
+  }
+
+  return { nodeShowTime, linkShowTime };
 };
 
 export type TCoord = [number, number];
