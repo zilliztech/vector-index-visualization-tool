@@ -30,14 +30,51 @@ const HNSWForceOne = observer(() => {
     searchStatus,
   });
 
-  const interLevelGap = 500;
-  const intraLevelGap = 2000;
+  const interLevelGap = 200;
+  const intraLevelGap = 1000;
   const { nodeShowTime, linkShowTime } = useTransitionTime({
     visData,
     searchStatus,
     interLevelGap,
     intraLevelGap,
   });
+
+  console.log("transition time", nodeShowTime, linkShowTime);
+
+  useEffect(() => {
+    if (layoutFinished) {
+      visData.forEach((levelData, level) => {
+        const { nodes, links } = levelData;
+        nodes.forEach((node) => {
+          const nodeId = `node-${level}-${node.id}`;
+          d3.select(`#${nodeId}`)
+            .transition()
+            .duration(interLevelGap * 0)
+            .delay(nodeShowTime[nodeId])
+            .attr("opacity", 1);
+        });
+        links.forEach((link) => {
+          const { source, target } = link;
+          const t = transform(nodeCoordMap[target], level);
+          const linkId = `link-${level}-${source}-${target}`;
+          d3.select(`#${linkId}`)
+            .transition()
+            .duration(interLevelGap)
+            .delay(linkShowTime[linkId])
+            .attr("x2", t[0])
+            .attr("y2", t[1]);
+        });
+        const intraLevelLinkId = `intra-level-${level}`;
+        const t = transform(nodeCoordMap[levelData.entry_ids[0]], level);
+        d3.select(`#${intraLevelLinkId}`)
+          .transition()
+          .duration(intraLevelGap)
+          .delay(linkShowTime[intraLevelLinkId])
+          .attr("x2", t[0])
+          .attr("y2", t[1]);
+      });
+    }
+  }, [layoutFinished]);
 
   return (
     <svg
@@ -65,16 +102,27 @@ const HNSWForceOne = observer(() => {
                   (link) =>
                     link.source in nodeCoordMap &&
                     link.target in nodeCoordMap && (
-                      <path
+                      <line
                         key={`link-${level}-${link.source}-${link.target}`}
+                        id={`link-${level}-${link.source}-${link.target}`}
                         fill="none"
-                        opacity="0.2"
-                        stroke="#ddd"
-                        strokeWidth="1"
-                        d={`M${transform(
-                          nodeCoordMap[link.source],
-                          level
-                        )}L${transform(nodeCoordMap[link.target], level)}`}
+                        opacity="0.3"
+                        stroke={
+                          link.type === LinkType.Visited ||
+                          link.type === LinkType.Searched
+                            ? "#222"
+                            : "#ddd"
+                        }
+                        strokeWidth={
+                          link.type === LinkType.Visited ||
+                          link.type === LinkType.Searched
+                            ? 0.5
+                            : 1
+                        }
+                        x1={transform(nodeCoordMap[link.source], level)[0]}
+                        y1={transform(nodeCoordMap[link.source], level)[1]}
+                        x2={transform(nodeCoordMap[link.source], level)[0]}
+                        y2={transform(nodeCoordMap[link.source], level)[1]}
                       />
                     )
                 )}
@@ -84,24 +132,46 @@ const HNSWForceOne = observer(() => {
                   <circle
                     key={node.id}
                     id={`node-${level}-${node.id}`}
+                    opacity={0}
                     cx={transform(nodeCoordMap[node.id], level)[0]}
                     cy={transform(nodeCoordMap[node.id], level)[1]}
-                    fill="#06F3AF"
-                    r={3}
+                    fill={node.type === NodeType.Coarse ? "#aaa" : "#06F3AF"}
+                    r={node.type === NodeType.Coarse ? 2 : 3}
                   />
                 ))}
               </g>
               {level > 0 && (
-                <path
+                <line
                   key={`intra-level-${level}`}
+                  id={`intra-level-${level}`}
                   fill="none"
                   opacity="0.6"
                   stroke="#ddd"
                   strokeWidth="2"
-                  d={`M${transform(
-                    nodeCoordMap[levelData.entry_ids[0]],
-                    level - 1
-                  )}L${transform(nodeCoordMap[levelData.entry_ids[0]], level)}`}
+                  x1={
+                    transform(
+                      nodeCoordMap[levelData.entry_ids[0]],
+                      level - 1
+                    )[0]
+                  }
+                  y1={
+                    transform(
+                      nodeCoordMap[levelData.entry_ids[0]],
+                      level - 1
+                    )[1]
+                  }
+                  x2={
+                    transform(
+                      nodeCoordMap[levelData.entry_ids[0]],
+                      level - 1
+                    )[0]
+                  }
+                  y2={
+                    transform(
+                      nodeCoordMap[levelData.entry_ids[0]],
+                      level - 1
+                    )[1]
+                  }
                 />
               )}
             </>
@@ -355,24 +425,26 @@ const useTransitionTime = ({
       links.forEach((link) => {
         const { source, target } = link;
         const sourceId = `node-${level}-${source}`;
-        const targetId = `node-${level}-${source}`;
+        const targetId = `node-${level}-${target}`;
         const linkId = `link-${level}-${source}-${target}`;
         if (!(sourceId in nodeShowTime)) {
           if (level > 0) {
-            currentTime += intraLevelGap;
             const intraLinkId = `intra-level-${level}`;
             linkShowTime[intraLinkId] = currentTime;
+            currentTime += intraLevelGap;
+            nodeShowTime[sourceId] = currentTime;
+          } else {
+            nodeShowTime[sourceId] = currentTime;
           }
-          nodeShowTime[sourceId] = currentTime;
-        }
-        currentTime += interLevelGap;
-        if (!(targetId in nodeShowTime)) {
-          nodeShowTime[targetId] = currentTime;
         }
         if (!(linkId in linkShowTime)) {
           linkShowTime[linkId] = currentTime;
         } else {
           console.log("link depulicate", level, link);
+        }
+        currentTime += interLevelGap;
+        if (!(targetId in nodeShowTime)) {
+          nodeShowTime[targetId] = currentTime;
         }
       });
     });
