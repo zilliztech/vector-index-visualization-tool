@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import { useClientRect } from "Hooks";
-import { ILevel, ILink, NodeType, LinkType, ELayoutType } from "Types";
+import { ILevel, INode, ILink, NodeType, LinkType, ELayoutType } from "Types";
 import * as d3 from "d3";
 import { toJS } from "mobx";
 
@@ -55,7 +55,11 @@ const HNSWForceOne = observer(() => {
     intraLevelGap,
   });
 
-  console.log("transition time", nodeShowTime, linkShowTime);
+  const targetCoord = nodeCoordMap["target"] || [
+    forceWidth / 2,
+    forceHeight / 2,
+  ];
+  // console.log("targetCoord", targetCoord);
 
   useEffect(() => {
     if (layoutFinished) {
@@ -118,6 +122,26 @@ const HNSWForceOne = observer(() => {
     return `url('#line-gradient-${standardAngle}')`;
   };
 
+  const getNodeR = (node: INode, level: number) => {
+    if (node.type === NodeType.Fine && level === visData.length - 1) {
+      return 5;
+    }
+    if (node.type === NodeType.Fine || node.type === NodeType.Candidate) {
+      return 4;
+    }
+    return 2;
+  };
+
+  const getNodeFill = (node: INode, level: number) => {
+    if (node.type === NodeType.Fine && level === visData.length - 1) {
+      return `url(#fine-gradient)`;
+    }
+    if (node.type === NodeType.Fine || node.type === NodeType.Candidate) {
+      return "url('#line-gradient-135')";
+    }
+    return "#999";
+  };
+
   return (
     <svg
       id={svgId}
@@ -140,6 +164,26 @@ const HNSWForceOne = observer(() => {
             <stop offset="95%" stop-color="#DBFFF5" />
           </linearGradient>
         ))}
+        <linearGradient
+          id={`target-gradient`}
+          x1={0}
+          y1={0}
+          x2={1}
+          y2={1}
+        >
+          <stop offset="5%" stop-color="#06AFF2" />
+          <stop offset="95%" stop-color="#CCF1FF" />
+        </linearGradient>
+        <linearGradient
+          id={`fine-gradient`}
+          x1={0}
+          y1={0}
+          x2={1}
+          y2={1}
+        >
+          <stop offset="5%" stop-color="#635DCE" />
+          <stop offset="95%" stop-color="#E3E1FF" />
+        </linearGradient>
         <filter id="blur" x="0" y="0">
           <feGaussianBlur stdDeviation="5" result="offset-blur" />
           <feComposite
@@ -164,12 +208,47 @@ const HNSWForceOne = observer(() => {
                   .map((coord) => `${coord}`)
                   .join("L")}Z`}
                 fill="#222"
-                opacity="0.7"
+                opacity="0.8"
                 filter={`url(#blur)`}
               />
             )}
             {layoutFinished && (
               <>
+                {level > 0 && (
+                  <line
+                    key={`intra-level-${level}`}
+                    id={`intra-level-${level}`}
+                    fill="none"
+                    opacity="0.7"
+                    stroke="url('#line-gradient-180')"
+                    // stroke="red"
+                    strokeWidth="6"
+                    x1={
+                      transform(
+                        nodeCoordMap[levelData.entry_ids[0]],
+                        level - 1
+                      )[0]
+                    }
+                    y1={
+                      transform(
+                        nodeCoordMap[levelData.entry_ids[0]],
+                        level - 1
+                      )[1]
+                    }
+                    x2={
+                      transform(
+                        nodeCoordMap[levelData.entry_ids[0]],
+                        level - 1
+                      )[0]
+                    }
+                    y2={
+                      transform(
+                        nodeCoordMap[levelData.entry_ids[0]],
+                        level - 1
+                      )[1]
+                    }
+                  />
+                )}
                 <g id="links-g">
                   {levelData.links.map(
                     (link) =>
@@ -208,51 +287,22 @@ const HNSWForceOne = observer(() => {
                       opacity={0}
                       cx={transform(nodeCoordMap[node.id], level)[0]}
                       cy={transform(nodeCoordMap[node.id], level)[1]}
-                      fill={
-                        node.type === NodeType.Coarse
-                          ? "#aaa"
-                          : "url('#line-gradient-135')"
-                      }
-                      r={node.type === NodeType.Coarse ? 2 : 4}
+                      fill={getNodeFill(node, level)}
+                      r={getNodeR(node, level)}
                       // stroke="#fff"
                       // strokeWidth={node.type === NodeType.Coarse ? 0 : 1}
                     />
                   ))}
                 </g>
-                {level > 0 && (
-                  <line
-                    key={`intra-level-${level}`}
-                    id={`intra-level-${level}`}
-                    fill="none"
-                    opacity="0.7"
-                    stroke="url('#line-gradient-180')"
-                    // stroke="red"
-                    strokeWidth="6"
-                    x1={
-                      transform(
-                        nodeCoordMap[levelData.entry_ids[0]],
-                        level - 1
-                      )[0]
-                    }
-                    y1={
-                      transform(
-                        nodeCoordMap[levelData.entry_ids[0]],
-                        level - 1
-                      )[1]
-                    }
-                    x2={
-                      transform(
-                        nodeCoordMap[levelData.entry_ids[0]],
-                        level - 1
-                      )[0]
-                    }
-                    y2={
-                      transform(
-                        nodeCoordMap[levelData.entry_ids[0]],
-                        level - 1
-                      )[1]
-                    }
-                  />
+                {level >= visData.length - 1 && (
+                  <g id="target-g">
+                    <circle
+                      cx={transform(targetCoord, level)[0]}
+                      cy={transform(targetCoord, level)[1]}
+                      fill="url(#target-gradient)"
+                      r={4}
+                    />
+                  </g>
                 )}
               </>
             )}
@@ -299,12 +349,22 @@ const useNodeCoordMap = ({
         });
       });
       const nodeIds = Object.keys(nodeId2dist);
-      const nodes = nodeIds.map((nodeId) => ({
-        id: `${nodeId}`,
-        dist: nodeId2dist[nodeId],
-        x: 0,
-        y: 0,
-      }));
+      const nodes = nodeIds.map(
+        (nodeId) =>
+          ({
+            id: `${nodeId}`,
+            dist: nodeId2dist[nodeId],
+            x: 0,
+            y: 0,
+          } as {
+            id: string;
+            dist: number;
+            x: number;
+            y: number;
+            fx?: number;
+            fy?: number;
+          })
+      );
 
       const linkStrings = new Set();
       const links = [] as ILink[];
@@ -331,12 +391,13 @@ const useNodeCoordMap = ({
       if (nodeIds.indexOf("target") >= 0) {
         console.log("??????", nodes);
       }
-      console.log(nodes.length, links.length);
       nodes.push({
         id: "target",
         dist: 0,
-        x: width / 2,
-        y: height / 2,
+        x: 0,
+        y: 0,
+        fx: width * 0.5, // 确保不会受到forceRadius的影响
+        fy: height * 0.5,
       });
       visData[0].fine_ids.forEach((fine_id) => {
         links.push({
@@ -346,7 +407,6 @@ const useNodeCoordMap = ({
         });
       });
       const maxR = Math.min(width / 2, height / 2);
-      console.log(toJS(visData), nodes, links);
 
       const r = d3
         .scaleLinear()
