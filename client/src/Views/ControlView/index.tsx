@@ -5,9 +5,20 @@ import ControlPanel from "Components/ControlPanel";
 import Upload from "Components/Upload";
 import CustomSelect from "Components/CustomSelect";
 import paramsConfig from "VisComponent/config";
+import { makeStyles, Theme } from "@material-ui/core";
+
+const useStyles = makeStyles((theme: Theme) => ({
+  root: {
+    minWidth: 200,
+    minheight: '100%',
+    backgroundColor: "inherit",
+    // opacity: 0.3
+  },
+}));
 
 const ControlView = observer(() => {
   const store = useGlobalStore();
+  const classes = useStyles();
   const {
     indexType,
     setIndexType,
@@ -37,7 +48,7 @@ const ControlView = observer(() => {
   };
 
   return (
-    <div>
+    <div className={classes.root}>
       <ControlPanel header="Data">
         <Upload />
       </ControlPanel>
@@ -95,21 +106,23 @@ const ControlView = observer(() => {
           )
         )}
       </ControlPanel>
-      {config.vis.length > 0 && <ControlPanel header="Visualize">
-        {config.vis.map((param) =>
-          param.type === "select" ? (
-            <CustomSelect
-              label={param.label}
-              value={visParams[param.value] || param.optionValues[0]}
-              setValue={(value) => handleSetVisParams(param.value, value)}
-              options={param.optionValues}
-              labels={param.optionLabels}
-            />
-          ) : (
-            <></>
-          )
-        )}
-      </ControlPanel>}
+      {config.vis.length > 0 && (
+        <ControlPanel header="Visualize">
+          {config.vis.map((param) =>
+            param.type === "select" ? (
+              <CustomSelect
+                label={param.label}
+                value={visParams[param.value] || param.optionValues[0]}
+                setValue={(value) => handleSetVisParams(param.value, value)}
+                options={param.optionValues}
+                labels={param.optionLabels}
+              />
+            ) : (
+              <></>
+            )
+          )}
+        </ControlPanel>
+      )}
     </div>
   );
 });
