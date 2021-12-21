@@ -117,8 +117,11 @@ const HNSWForceOne = observer(() => {
     // const angleDiff = angles.map((x) => Math.abs(x - angle));
     // const standardAngle = angles[d3.minIndex(angleDiff)];
     const angleSlice = 45;
-    const standardAngle =
-      Math.floor((angle + angleSlice / 2) / angleSlice) * angleSlice;
+    const angleN = Math.floor((angle + angleSlice / 2) / angleSlice);
+    let standardAngle = angleN * angleSlice;
+    if (standardAngle === 360) {
+      standardAngle = 0;
+    }
     return `url('#line-gradient-${standardAngle}')`;
   };
 
@@ -139,7 +142,7 @@ const HNSWForceOne = observer(() => {
     if (node.type === NodeType.Fine || node.type === NodeType.Candidate) {
       return "url('#line-gradient-135')";
     }
-    return "#999";
+    return "#bbb";
   };
 
   return (
@@ -164,23 +167,11 @@ const HNSWForceOne = observer(() => {
             <stop offset="95%" stop-color="#DBFFF5" />
           </linearGradient>
         ))}
-        <linearGradient
-          id={`target-gradient`}
-          x1={0}
-          y1={0}
-          x2={1}
-          y2={1}
-        >
+        <linearGradient id={`target-gradient`} x1={0} y1={0} x2={1} y2={1}>
           <stop offset="5%" stop-color="#06AFF2" />
           <stop offset="95%" stop-color="#CCF1FF" />
         </linearGradient>
-        <linearGradient
-          id={`fine-gradient`}
-          x1={0}
-          y1={0}
-          x2={1}
-          y2={1}
-        >
+        <linearGradient id={`fine-gradient`} x1={0} y1={0} x2={1} y2={1}>
           <stop offset="5%" stop-color="#635DCE" />
           <stop offset="95%" stop-color="#E3E1FF" />
         </linearGradient>
@@ -222,7 +213,7 @@ const HNSWForceOne = observer(() => {
                     opacity="0.7"
                     stroke="url('#line-gradient-180')"
                     // stroke="red"
-                    strokeWidth="6"
+                    strokeWidth="8"
                     x1={
                       transform(
                         nodeCoordMap[levelData.entry_ids[0]],
@@ -268,7 +259,7 @@ const HNSWForceOne = observer(() => {
                           strokeWidth={
                             link.type === LinkType.Searched ||
                             link.type === LinkType.Fine
-                              ? 6
+                              ? 7
                               : 1
                           }
                           x1={transform(nodeCoordMap[link.source], level)[0]}
@@ -281,14 +272,16 @@ const HNSWForceOne = observer(() => {
                 </g>
                 <g id="circles-g">
                   {levelData.nodes.map((node) => (
-                    <circle
+                    <ellipse
                       key={node.id}
                       id={`node-${level}-${node.id}`}
                       opacity={0}
                       cx={transform(nodeCoordMap[node.id], level)[0]}
                       cy={transform(nodeCoordMap[node.id], level)[1]}
                       fill={getNodeFill(node, level)}
-                      r={getNodeR(node, level)}
+                      rx={getNodeR(node, level) + 1}
+                      ry={getNodeR(node, level)}
+                      style={{ transform: `rotate(45)` }}
                       // stroke="#fff"
                       // strokeWidth={node.type === NodeType.Coarse ? 0 : 1}
                     />
@@ -296,11 +289,14 @@ const HNSWForceOne = observer(() => {
                 </g>
                 {level >= visData.length - 1 && (
                   <g id="target-g">
-                    <circle
+                    <ellipse
                       cx={transform(targetCoord, level)[0]}
                       cy={transform(targetCoord, level)[1]}
                       fill="url(#target-gradient)"
-                      r={4}
+                      rx={6}
+                      ry={5}
+                      style={{ transform: `rotate(45)` }}
+                      stroke="#ddd"
                     />
                   </g>
                 )}
@@ -391,14 +387,17 @@ const useNodeCoordMap = ({
       if (nodeIds.indexOf("target") >= 0) {
         console.log("??????", nodes);
       }
-      nodes.push({
+
+      const targetOrigin = [width * 0.5, height * 0.5];
+      const targetNodeProjection = {
         id: "target",
         dist: 0,
-        x: 0,
-        y: 0,
-        fx: width * 0.5, // 确保不会受到forceRadius的影响
-        fy: height * 0.5,
-      });
+        x: targetOrigin[0],
+        y: targetOrigin[1],
+        fx: targetOrigin[0], // 确保不会受到forceRadius的影响
+        fy: targetOrigin[1],
+      };
+      nodes.push(targetNodeProjection);
       visData[0].fine_ids.forEach((fine_id) => {
         links.push({
           target: "target",
@@ -439,19 +438,21 @@ const useNodeCoordMap = ({
                 d3
                   .forceLink(links)
                   .id((d) => (d as any).id)
-                  .strength(0.4)
+                  .strength((d) =>
+                    // make Fine-Node closer to Target-Node
+                    (d as any).type === LinkType.None ? 0.9 : 0.4
+                  )
               )
               .force(
                 "r",
                 d3
                   .forceRadial(
                     (node) => r((node as any).dist),
-                    width / 2,
-                    height / 2
+                    targetOrigin[0],
+                    targetOrigin[1]
                   )
                   .strength(0.6)
               )
-              // .force("center", d3.forceCenter(width / 2, height / 2))
               .force("charge", d3.forceManyBody().strength(-10));
 
       const timer = setTimeout(() => {
@@ -471,8 +472,16 @@ const useNodeCoordMap = ({
           .domain(d3.extent(nodes, (node) => node.y) as TCoord)
           .range([padding[1], height - padding[1]]);
 
+        if (x(targetNodeProjection.x) < targetOrigin[0]) {
+          x.range([width - padding[0], padding[0]]);
+        }
+        if (y(targetNodeProjection.y) < targetOrigin[1]) {
+          x.range([height - padding[1], padding[1]]);
+        }
+
         nodes.forEach((node) => {
           coordMap[node.id] = [x(node.x), y(node.y)];
+          // coordMap[node.id] = [node.x, node.y];
         });
 
         setNodeCoordMap(coordMap);
