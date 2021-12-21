@@ -384,10 +384,6 @@ const useNodeCoordMap = ({
         });
       });
 
-      if (nodeIds.indexOf("target") >= 0) {
-        console.log("??????", nodes);
-      }
-
       const targetOrigin = [width * 0.5, height * 0.5];
       const targetNodeProjection = {
         id: "target",
@@ -471,7 +467,8 @@ const useNodeCoordMap = ({
           .scaleLinear()
           .domain(d3.extent(nodes, (node) => node.y) as TCoord)
           .range([padding[1], height - padding[1]]);
-
+        
+        // make targetNode be shown in the appropriate place
         if (x(targetNodeProjection.x) < targetOrigin[0]) {
           x.range([width - padding[0], padding[0]]);
         }
