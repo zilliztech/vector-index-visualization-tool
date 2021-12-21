@@ -2,12 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import { useClientRect } from "Hooks";
-import {
-  INode,
-  ILink,
-  NodeType,
-  LinkType,
-} from "Types";
+import { INode, ILink, NodeType, LinkType } from "Types";
 import { useTransform } from "./useTransform";
 import { useNodeCoordMap } from "./useNodeCoordMap";
 import { useTransitionTime, ETransType } from "./useTransitionTime";
@@ -312,11 +307,10 @@ const HNSWForceOne = observer(() => {
                       fill={getNodeFill(node, level)}
                       rx={getNodeR(node, level) + 1}
                       ry={getNodeR(node, level)}
-                      style={{ transform: `rotate(45)` }}
                     />
                   ))}
                 </g>
-                {level >= visData.length - 1 && (
+                {/* {level >= visData.length - 1 && (
                   <g id="target-g">
                     <ellipse
                       cx={transform(targetCoord, level)[0]}
@@ -326,7 +320,31 @@ const HNSWForceOne = observer(() => {
                       ry={4}
                     />
                   </g>
-                )}
+                )} */}
+                <g id="target-g">
+                  {level > 0 && (
+                    <line
+                      fill="none"
+                      stroke="#ccc"
+                      strokeWidth="2"
+                      opacity="0.5"
+                      x1={transform(targetCoord, level)[0]}
+                      y1={transform(targetCoord, level)[1]}
+                      x2={transform(targetCoord, level - 1)[0]}
+                      y2={transform(targetCoord, level - 1)[1]}
+                      strokeDasharray={5}
+                    />
+                  )}
+                  {(
+                    <ellipse
+                      cx={transform(targetCoord, level)[0]}
+                      cy={transform(targetCoord, level)[1]}
+                      fill="url(#target-gradient)"
+                      rx={5}
+                      ry={4}
+                    />
+                  )}
+                </g>
               </>
             )}
           </g>
