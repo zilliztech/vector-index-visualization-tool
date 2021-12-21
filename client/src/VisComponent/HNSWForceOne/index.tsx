@@ -2,11 +2,16 @@ import React, { useEffect, useState } from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import { useClientRect } from "Hooks";
-import { ILevel, INode, ILink, NodeType, LinkType, ELayoutType } from "Types";
+import {
+  INode,
+  ILink,
+  NodeType,
+  LinkType,
+} from "Types";
+import { useTransform } from "./useTransform";
+import { useNodeCoordMap } from "./useNodeCoordMap";
+import { useTransitionTime, ETransType } from "./useTransitionTime";
 import * as d3 from "d3";
-import { toJS } from "mobx";
-
-const angles = d3.range(0, 360, 45);
 
 const angleXYs = [
   [0, 1, 0, 0],
@@ -46,20 +51,21 @@ const HNSWForceOne = observer(() => {
     searchStatus,
   });
 
-  const interLevelGap = 200;
+  const interLevelGap = 800;
   const intraLevelGap = 1000;
+  const linkFadeTime = 1200;
   const { nodeShowTime, linkShowTime } = useTransitionTime({
     visData,
     searchStatus,
     interLevelGap,
     intraLevelGap,
+    transType: ETransType.DiffSpeed,
   });
 
   const targetCoord = nodeCoordMap["target"] || [
     forceWidth / 2,
     forceHeight / 2,
   ];
-  // console.log("targetCoord", targetCoord);
 
   useEffect(() => {
     if (layoutFinished) {
@@ -71,18 +77,43 @@ const HNSWForceOne = observer(() => {
             .transition()
             .duration(interLevelGap * 0)
             .delay(nodeShowTime[nodeId])
-            .attr("opacity", 1);
+            .attr("opacity", 1)
+            .on("end", function () {
+              if (node.type === NodeType.Coarse) {
+                d3.select(this)
+                  .transition()
+                  .duration(linkFadeTime)
+                  .attr("opacity", 0.3);
+              }
+            });
         });
         links.forEach((link) => {
-          const { source, target } = link;
+          const { source, target, type } = link;
           const t = transform(nodeCoordMap[target], level);
           const linkId = `link-${level}-${source}-${target}`;
           d3.select(`#${linkId}`)
             .transition()
-            .duration(interLevelGap)
+            .duration(0)
             .delay(linkShowTime[linkId])
-            .attr("x2", t[0])
-            .attr("y2", t[1]);
+            .attr("opacity", 0.6)
+            .on("end", function () {
+              d3.select(this)
+                .transition()
+                .duration(interLevelGap)
+                .attr("x2", t[0])
+                .attr("y2", t[1])
+                .on("end", function () {
+                  if (type === LinkType.Visited || type === LinkType.Extended) {
+                    d3.select(this)
+                      .transition()
+                      .duration(linkFadeTime)
+                      .attr(
+                        "opacity",
+                        level === visData.length - 1 ? 0.05 : 0.2
+                      );
+                  }
+                });
+            });
         });
         const intraLevelLinkId = `intra-level-${level}`;
         const t = transform(nodeCoordMap[levelData.entry_ids[0]], level);
@@ -114,8 +145,6 @@ const HNSWForceOne = observer(() => {
         angle += 180;
       }
     }
-    // const angleDiff = angles.map((x) => Math.abs(x - angle));
-    // const standardAngle = angles[d3.minIndex(angleDiff)];
     const angleSlice = 45;
     const angleN = Math.floor((angle + angleSlice / 2) / angleSlice);
     let standardAngle = angleN * angleSlice;
@@ -140,9 +169,9 @@ const HNSWForceOne = observer(() => {
       return `url(#fine-gradient)`;
     }
     if (node.type === NodeType.Fine || node.type === NodeType.Candidate) {
-      return "url('#line-gradient-135')";
+      return "url(#line-gradient-135)";
     }
-    return "#bbb";
+    return "#fff";
   };
 
   return (
@@ -167,12 +196,12 @@ const HNSWForceOne = observer(() => {
             <stop offset="95%" stop-color="#DBFFF5" />
           </linearGradient>
         ))}
-        <linearGradient id={`target-gradient`} x1={0} y1={0} x2={1} y2={1}>
+        <linearGradient id={`fine-gradient`} x1={0} y1={0} x2={1} y2={1}>
           <stop offset="5%" stop-color="#06AFF2" />
           <stop offset="95%" stop-color="#CCF1FF" />
         </linearGradient>
-        <linearGradient id={`fine-gradient`} x1={0} y1={0} x2={1} y2={1}>
-          <stop offset="5%" stop-color="#635DCE" />
+        <linearGradient id={`target-gradient`} x1={0} y1={0} x2={1} y2={1}>
+          <stop offset="5%" stop-color="#f03b20" />
           <stop offset="95%" stop-color="#E3E1FF" />
         </linearGradient>
         <filter id="blur" x="0" y="0">
@@ -214,6 +243,7 @@ const HNSWForceOne = observer(() => {
                     stroke="url('#line-gradient-180')"
                     // stroke="red"
                     strokeWidth="8"
+                    strokeLinecap="round"
                     x1={
                       transform(
                         nodeCoordMap[levelData.entry_ids[0]],
@@ -249,12 +279,13 @@ const HNSWForceOne = observer(() => {
                           key={`link-${level}-${link.source}-${link.target}`}
                           id={`link-${level}-${link.source}-${link.target}`}
                           fill="none"
-                          opacity="0.6"
+                          opacity="0"
+                          strokeLinecap="round"
                           stroke={
                             link.type === LinkType.Searched ||
                             link.type === LinkType.Fine
                               ? getLineGradient(link)
-                              : "none"
+                              : "#ddd"
                           }
                           strokeWidth={
                             link.type === LinkType.Searched ||
@@ -282,8 +313,6 @@ const HNSWForceOne = observer(() => {
                       rx={getNodeR(node, level) + 1}
                       ry={getNodeR(node, level)}
                       style={{ transform: `rotate(45)` }}
-                      // stroke="#fff"
-                      // strokeWidth={node.type === NodeType.Coarse ? 0 : 1}
                     />
                   ))}
                 </g>
@@ -293,10 +322,8 @@ const HNSWForceOne = observer(() => {
                       cx={transform(targetCoord, level)[0]}
                       cy={transform(targetCoord, level)[1]}
                       fill="url(#target-gradient)"
-                      rx={6}
-                      ry={5}
-                      style={{ transform: `rotate(45)` }}
-                      stroke="#ddd"
+                      rx={5}
+                      ry={4}
                     />
                   </g>
                 )}
@@ -310,294 +337,3 @@ const HNSWForceOne = observer(() => {
 });
 
 export default HNSWForceOne;
-
-const useNodeCoordMap = ({
-  width,
-  height,
-  visData,
-  searchStatus,
-  computeTime = 3000,
-  padding = [50, 20],
-  layoutType = ELayoutType.ForceDist,
-}: {
-  width: number;
-  height: number;
-  visData: ILevel[];
-  searchStatus: string;
-  computeTime?: number;
-  padding?: [number, number];
-  layoutType?: ELayoutType;
-}) => {
-  const [nodeCoordMap, setNodeCoordMap] = useState<{ [key: string]: TCoord }>(
-    {}
-  );
-  const [layoutFinished, setLayoutFinished] = useState(false);
-  const [computeTimer, setComputeTimer] = useState<NodeJS.Timeout>();
-
-  useEffect(() => {
-    setLayoutFinished(false);
-    computeTimer && clearTimeout(computeTimer);
-    if (width > 0 && height > 0 && searchStatus === "ok") {
-      const nodeId2dist = {} as { [key: string]: number };
-      visData.forEach((levelData) => {
-        levelData.nodes.forEach((node) => {
-          nodeId2dist[node.id] = node.dist || 0;
-        });
-      });
-      const nodeIds = Object.keys(nodeId2dist);
-      const nodes = nodeIds.map(
-        (nodeId) =>
-          ({
-            id: `${nodeId}`,
-            dist: nodeId2dist[nodeId],
-            x: 0,
-            y: 0,
-          } as {
-            id: string;
-            dist: number;
-            x: number;
-            y: number;
-            fx?: number;
-            fy?: number;
-          })
-      );
-
-      const linkStrings = new Set();
-      const links = [] as ILink[];
-      // de-duplicate
-      visData.forEach((levelData) => {
-        levelData.links.forEach((link) => {
-          if (
-            `${link.source}---${link.target}` in linkStrings ||
-            `${link.target}---${link.source}` in linkStrings
-          ) {
-            console.log("link existed", link);
-          } else {
-            linkStrings.add(`${link.source}---${link.target}`);
-            // links.push(toJS(link));
-            links.push({
-              source: `${link.source}`,
-              target: `${link.target}`,
-              type: link.type,
-            });
-          }
-        });
-      });
-
-      const targetOrigin = [width * 0.5, height * 0.5];
-      const targetNodeProjection = {
-        id: "target",
-        dist: 0,
-        x: targetOrigin[0],
-        y: targetOrigin[1],
-        fx: targetOrigin[0], // 确保不会受到forceRadius的影响
-        fy: targetOrigin[1],
-      };
-      nodes.push(targetNodeProjection);
-      visData[0].fine_ids.forEach((fine_id) => {
-        links.push({
-          target: "target",
-          source: `${fine_id}`,
-          type: LinkType.None,
-        });
-      });
-      const maxR = Math.min(width / 2, height / 2);
-
-      const r = d3
-        .scaleLinear()
-        .domain(
-          d3.extent(
-            nodes.filter((node) => node.dist > 0),
-            (node) => node.dist
-          ) as [number, number]
-        )
-        .range([20, maxR])
-        .clamp(true);
-
-      const simulation =
-        layoutType === ELayoutType.Force
-          ? d3
-              .forceSimulation(nodes)
-              .force(
-                "link",
-                d3
-                  .forceLink(links)
-                  .id((d) => (d as any).id)
-                  .strength(1)
-              )
-              .force("center", d3.forceCenter(width / 2, height / 2))
-              .force("charge", d3.forceManyBody().strength(-10))
-          : d3
-              .forceSimulation(nodes)
-              .force(
-                "link",
-                d3
-                  .forceLink(links)
-                  .id((d) => (d as any).id)
-                  .strength((d) =>
-                    // make Fine-Node closer to Target-Node
-                    (d as any).type === LinkType.None ? 0.9 : 0.4
-                  )
-              )
-              .force(
-                "r",
-                d3
-                  .forceRadial(
-                    (node) => r((node as any).dist),
-                    targetOrigin[0],
-                    targetOrigin[1]
-                  )
-                  .strength(0.6)
-              )
-              .force("charge", d3.forceManyBody().strength(-10));
-
-      const timer = setTimeout(() => {
-        console.log("force ok~");
-        const coordMap = {} as { [key: string]: TCoord };
-        simulation.stop();
-        nodes.forEach((node) => {
-          coordMap[node.id] = [node.x, node.y];
-        });
-
-        const x = d3
-          .scaleLinear()
-          .domain(d3.extent(nodes, (node) => node.x) as TCoord)
-          .range([padding[0], width - padding[0]]);
-        const y = d3
-          .scaleLinear()
-          .domain(d3.extent(nodes, (node) => node.y) as TCoord)
-          .range([padding[1], height - padding[1]]);
-        
-        // make targetNode be shown in the appropriate place
-        if (x(targetNodeProjection.x) < targetOrigin[0]) {
-          x.range([width - padding[0], padding[0]]);
-        }
-        if (y(targetNodeProjection.y) < targetOrigin[1]) {
-          x.range([height - padding[1], padding[1]]);
-        }
-
-        nodes.forEach((node) => {
-          coordMap[node.id] = [x(node.x), y(node.y)];
-          // coordMap[node.id] = [node.x, node.y];
-        });
-
-        setNodeCoordMap(coordMap);
-        setLayoutFinished(true);
-      }, computeTime);
-      setComputeTimer(timer);
-    }
-  }, [width, height, visData, searchStatus]);
-
-  return { nodeCoordMap, layoutFinished };
-};
-
-// Project: [width, height] => [forceWidth, forceHeight] with bias.
-const useTransform = ({
-  width,
-  height,
-  forceWidth,
-  forceHeight,
-  visData,
-  searchStatus,
-  xBias = 0.68,
-  yBias = 0.7,
-  yOver = 0.35,
-  padding = [30, 20],
-}: {
-  width: number;
-  height: number;
-  forceWidth: number;
-  forceHeight: number;
-  visData: ILevel[];
-  searchStatus: string;
-  xBias?: number;
-  yBias?: number;
-  yOver?: number;
-  padding?: TCoord;
-}) => {
-  let levelMapCoords = visData.map((_) => []) as TCoord[][];
-  let transform = ([x, y]: TCoord, level: number) => [0, 0] as TCoord;
-  if (width > 0 && height > 0 && searchStatus === "ok") {
-    const levelCount = visData.length;
-    const levelHeight =
-      (height - padding[1] * 2) / (levelCount - (levelCount - 1) * yOver);
-    transform = ([x, y]: TCoord, level: number) => {
-      const _x = x / forceWidth;
-      const _y = y / forceHeight;
-
-      const newX =
-        padding[0] +
-        (width - padding[0] * 2) * xBias +
-        _x * (width - padding[0] * 2) * (1 - xBias) -
-        _y * (width - padding[0] * 2) * xBias;
-      const newY =
-        padding[1] +
-        levelHeight * (1 - yOver) * level +
-        _x * levelHeight * (1 - yBias) +
-        _y * levelHeight * yBias;
-      return [newX, newY] as TCoord;
-    };
-
-    levelMapCoords = visData.map((_, i) =>
-      [
-        [0, 0],
-        [forceWidth, 0],
-        [forceWidth, forceHeight],
-        [0, forceHeight],
-      ].map((coord) => transform(coord as TCoord, i))
-    );
-  }
-  return { transform, levelMapCoords };
-};
-
-const useTransitionTime = ({
-  visData,
-  searchStatus,
-  interLevelGap = 1000,
-  intraLevelGap = 2000,
-}: {
-  visData: ILevel[];
-  searchStatus: string;
-  interLevelGap?: number;
-  intraLevelGap?: number;
-}) => {
-  let currentTime = 0;
-  // key = `${level}-${node.id}`
-  const nodeShowTime = {} as { [key: string]: number };
-  // key = `${level}-${link.source}-${link.target}`
-  const linkShowTime = {} as { [key: string]: number };
-  if (searchStatus === "ok") {
-    visData.forEach((levelData, level) => {
-      const links = levelData.links;
-      links.forEach((link) => {
-        const { source, target } = link;
-        const sourceId = `node-${level}-${source}`;
-        const targetId = `node-${level}-${target}`;
-        const linkId = `link-${level}-${source}-${target}`;
-        if (!(sourceId in nodeShowTime)) {
-          if (level > 0) {
-            const intraLinkId = `intra-level-${level}`;
-            linkShowTime[intraLinkId] = currentTime;
-            currentTime += intraLevelGap;
-            nodeShowTime[sourceId] = currentTime;
-          } else {
-            nodeShowTime[sourceId] = currentTime;
-          }
-        }
-        if (!(linkId in linkShowTime)) {
-          linkShowTime[linkId] = currentTime;
-        } else {
-          console.log("link depulicate", level, link);
-        }
-        currentTime += interLevelGap;
-        if (!(targetId in nodeShowTime)) {
-          nodeShowTime[targetId] = currentTime;
-        }
-      });
-    });
-  }
-
-  return { nodeShowTime, linkShowTime };
-};
-
-export type TCoord = [number, number];

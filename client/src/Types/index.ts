@@ -22,6 +22,16 @@ export enum LevelStatus {
 }
 
 export type TNodeProjection = [number, number];
+export type TCoord = [number, number];
+
+export interface IForceNode {
+  id: string;
+  dist: number;
+  x: number;
+  y: number;
+  fx?: number;
+  fy?: number;
+}
 
 export interface INodesData {
   id: string;
