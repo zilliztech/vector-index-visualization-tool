@@ -303,7 +303,7 @@ const useCoarseLevelNodes = ({
       // const idealAreaRange = [100, 1000];
       const idealAreaRange = (
         d3.extent(nodes, (node) => node.countArea) as [number, number]
-      ).map((a) => a * 0.9);
+      ).map((a) => a * 0.92);
 
       const r2 = d3
         .scaleLinear()
