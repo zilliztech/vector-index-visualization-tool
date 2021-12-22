@@ -27,7 +27,9 @@
   - faiss (version?)
   - hnswlib-modify
     - download and install wheel directly.
-    - compile (todo link).
+    - compile C++ to py (todo link).
+  
+### Build and Run
 - Clone this repo
 ```
 git clone git@github.com:zilliztech/data-visualization-tool.git
@@ -42,3 +44,11 @@ python api.py
 yarn start
 ```
 
+
+## IVFFlat Visualization
+
+## HNSW Visualization
+
+## Join us
+
+## Acknowledgments
