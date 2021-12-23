@@ -6,19 +6,19 @@ We provide visualizations for the process of ANNS.
 Currently, it supports IVFFlat and HNSW.
 
 - Backend server
-  - Vector data store and mapping
-  - index build / search
-  - projection utils
-- Web for Visualizations
+  - vector data store and mapping
+  - Index building / search
+  - Projection utils
+- Web for visualizations
   - Design for IVFFlat and HNSW
-  - technical: including Voronoi, d3-force-links/radius/collision, DR project methods (pca, mds, t-sne, umap)
+  - Technicals: including voronoi, d3-force-links/radius/collision, DR project methods (pca, mds, t-sne, umap)
 
 
 ## Quick start
 
 ### Preparing
 
-- new conda env (python >= 3.6)
+- New conda env (python >= 3.6)
 ```
 $ conda create -n myenv python=3.6
 $ conda activate myenv
@@ -37,7 +37,11 @@ $ conda install -c pytorch faiss-gpu cudatoolkit=10.2 # for CUDA 10.2
 - hnswlib4vis
   - download and install wheel directly.
   - compile C++ to py (todo link).
-  
+
+- Dataset (images and embedding vectors)
+  - sample download
+
+
 ### Build and Run
 - Clone this repo
 ```
