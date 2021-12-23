@@ -2,18 +2,14 @@
 
 ## Overview
 
-本工作为similarity search过程提供可视化展示。
-目前支持IVFFlat、HNSW这两个索引。
+We provide visualizations for the process of ANNS. 
+Currently, it supports IVFFlat and HNSW.
 
-包括以下几个部分
-- Similarity search过程中的向量访问记录
-  - IVFFlat - from faiss-python api (todo link)
-  - HNSWlib - modify the source cpp (todo link)
 - Backend server
-  - vector data store and mapping
+  - Vector data store and mapping
   - index build / search
   - projection utils
-- Web React - Visualization Views
+- Web for Visualizations
   - Design for IVFFlat and HNSW
   - technical: including Voronoi, d3-force-links/radius/collision, DR project methods (pca, mds, t-sne, umap)
 
@@ -22,33 +18,64 @@
 
 ### Preparing
 
-- new conda env
-  - python >= 3.6
-  - faiss (version?)
-  - hnswlib-modify
-    - download and install wheel directly.
-    - compile C++ to py (todo link).
+- new conda env (python >= 3.6)
+```
+$ conda create -n myenv python=3.6
+$ conda activate myenv
+```
+- faiss >= 1.7.1 ([Installing Faiss via conda](https://github.com/facebookresearch/faiss/blob/main/INSTALL.md))
+```
+# CPU-only version
+$ conda install -c pytorch faiss-cpu
+
+# GPU(+CPU) version
+$ conda install -c pytorch faiss-gpu
+
+# or for a specific CUDA version
+$ conda install -c pytorch faiss-gpu cudatoolkit=10.2 # for CUDA 10.2 
+```
+- hnswlib4vis
+  - download and install wheel directly.
+  - compile C++ to py (todo link).
   
 ### Build and Run
 - Clone this repo
 ```
-git clone git@github.com:zilliztech/data-visualization-tool.git
+$ git clone git@github.com:zilliztech/data-visualization-tool.git
 ```
 - Run server
 ```
-cd server/
-python api.py
+$ cd server/
+$ pip install -r requirements.txt
+$ python api.py
 ```
 - Run web
 ```
-yarn start
+$ yarn start
 ```
 
 
 ## IVFFlat Visualization
 
+todo snapshots
+
+The visiting records of vectors in IVFFlat comes from the python api of [faiss](https://github.com/facebookresearch/faiss).
+(details on *server/index/faiss_ivf.py*)
+
 ## HNSW Visualization
+
+todo snapshots
+
+Getting the visiting records of vectors in HNSW comes by modifying the source cpp of [hnswlib](https://github.com/nmslib/hnswlib),
+then compiling to python.
+(details on [hnswlib for vis]() and *server/index/hnswlib_hnsw.py*)
 
 ## Join us
 
+Welcome to Zilliz!
+
 ## Acknowledgments
+
+- [faiss](https://github.com/facebookresearch/faiss)
+- [hnswlib](https://github.com/nmslib/hnswlib)
+- [d3](https://github.com/d3/d3)
