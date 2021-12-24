@@ -6,7 +6,7 @@ We provide visualizations for the process of ANNS.
 Currently, it supports IVFFlat and HNSW.
 
 - Backend server
-  - vector data store and mapping
+  - Vector data store and mapping
   - Index building / search
   - Projection utils
 - Web for visualizations
