@@ -35,7 +35,7 @@ $ conda install -c pytorch faiss-gpu
 $ conda install -c pytorch faiss-gpu cudatoolkit=10.2 # for CUDA 10.2 
 ```
 - hnswlib4vis
-  - download and install wheel directly.
+  - Download and install wheel directly.
   - compile C++ to py (todo link).
 
 - Dataset (images and embedding vectors)
@@ -72,7 +72,7 @@ todo snapshots
 
 Getting the visiting records of vectors in HNSW comes by modifying the source cpp of [hnswlib](https://github.com/nmslib/hnswlib),
 then compiling to python.
-(details on [hnswlib for vis]() and *server/index/hnswlib_hnsw.py*)
+(details on [hnswlib4vis]() and *server/index/hnswlib_hnsw.py*)
 
 ## Join us
 

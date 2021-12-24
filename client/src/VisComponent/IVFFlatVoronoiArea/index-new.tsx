@@ -197,7 +197,7 @@ const IVFFlatVoronoiArea = observer(() => {
                     : node.centroidY
                 }
                 // opacity={levelStatus.status === LevelStatus.Enter ? 1 : 0.3}
-                opacity={node.type === NodeType.Fine ? 0.9 : 0.5}
+                opacity={node.type === NodeType.Fine ? 1 : 0.6}
                 r={node.type === NodeType.Fine ? 7 : 5}
                 strokeWidth={node.type === NodeType.Fine ? 1 : 0}
                 stroke={"#fff"}
