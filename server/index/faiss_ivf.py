@@ -5,7 +5,7 @@ import faiss
 
 from project_utils import projection
 
-from custom_types import NodeType, LinkType
+from custom_types import NodeType
 
 
 class FaissIvfIndex(BaseIndex):

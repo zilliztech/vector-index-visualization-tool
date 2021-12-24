@@ -1,10 +1,18 @@
-import React, { useState } from "react";
-import { makeStyles, Theme, IconButton, Drawer } from "@material-ui/core";
-import MenuIcon from "@mui/icons-material/Menu";
+import React  // , { useState }
+from "react";
+import {
+  makeStyles,
+  Theme,
+  // IconButton,
+  // Drawer
+} from "@material-ui/core";
+// import MenuIcon from "@mui/icons-material/Menu";
 import { StoreProvider } from "Store";
 import MainView from "Views/MainView";
-import ControlView from "Views/ControlView";
+// import ControlView from "Views/ControlView";
+import Header from "Views/Header";
 
+const headerHeight = 30;
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     fontSize: 10,
@@ -17,12 +25,20 @@ const useStyles = makeStyles((theme: Theme) => ({
     position: "absolute",
     right: 0,
     left: 0,
-    top: 0,
+    top: headerHeight,
     bottom: 0,
     // margin: 18,
     // borderRadius: 10,
     // padding: 10,
     // boxShadow: "0 0 8px #aaa",
+  },
+  header: {
+    position: "absolute",
+    right: 0,
+    left: 0,
+    top: 0,
+    height: headerHeight,
+    backgroundColor: "#222",
   },
   controlView: {
     position: "absolute",
@@ -36,23 +52,31 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   controlDrawer: {
     height: "100%",
-  }
+  },
 }));
 
 function App() {
   const classes = useStyles();
-  const [drawerOpen, setDrawerOpen] = useState(true);
-  const handleDrawerOpen = () => setDrawerOpen(!drawerOpen);
+  // const [drawerOpen, setDrawerOpen] = useState(true);
+  // const handleDrawerOpen = () => setDrawerOpen(!drawerOpen);
   return (
     <StoreProvider>
       <div className={classes.root}>
+        <div className={classes.header}>
+          <Header />
+        </div>
         <div className={classes.mainView}>
           <MainView />
         </div>
         {/* <div className={classes.controlView}>
           <ControlView />
         </div> */}
-        <Drawer className={classes.controlDrawer} anchor="right" open={drawerOpen} onClose={handleDrawerOpen}>
+        {/* <Drawer
+          className={classes.controlDrawer}
+          anchor="right"
+          open={drawerOpen}
+          onClose={handleDrawerOpen}
+        >
           <ControlView />
         </Drawer>
         <IconButton
@@ -63,7 +87,7 @@ function App() {
           // sx={{ mr: 2, display: "none" }}
         >
           <MenuIcon />
-        </IconButton>
+        </IconButton> */}
       </div>
     </StoreProvider>
   );
