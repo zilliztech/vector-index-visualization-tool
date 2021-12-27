@@ -10,7 +10,11 @@ class Index:
 
         self.data = Data()
         self.vectors_path = "./data/vectors.csv"
-        self.data.init_vectors(self.vectors_path)
+        self.key_attr = 'name'
+        self.vector_attr = 'vector'
+        self.data.init_vectors(
+            self.vectors_path, self.key_attr, self.vector_attr)
+        self.vectors_count = self.data.vectors_count
 
         self.set_index_type('ivf_flat')
         self.index.set_vectors(self.data.vectors)
@@ -49,7 +53,7 @@ class Index:
         vis_res = self.index.get_search_vis_data(self.data.vectors[id])
         # self.data.map_keys(vis_res)
         return vis_res
-    
+
     def get_corase_vis_data(self, id):
         if self.index_type == 'ivf_flat':
             return self.index.get_corase_vis_data()

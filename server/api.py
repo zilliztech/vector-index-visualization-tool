@@ -114,6 +114,9 @@ def get_image_by_id(fileId):
 #     print(fileId, filename)
 #     return send_from_directory('./data/images', filename)
 
+@app.route('/get_vectors_count')
+def get_vectors_count():
+    return jsonify({'count': index.vectors_count})
 
 if __name__ == '__main__':
     app.run(debug=False, port=12357)

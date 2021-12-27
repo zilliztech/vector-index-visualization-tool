@@ -8,18 +8,18 @@ class Data:
         self.vectors = []
         self.keys = []
         self.has_data = False
+        self.vectors_count = 0
         # self.test_number = 10
-        self.key_attr = 'name'
-        self.vector_attr = 'vector'
 
-    def init_vectors(self, vectors_path):
+    def init_vectors(self, vectors_path, key_attr = 'name', vector_attr = 'vector'):
         with open(vectors_path) as f:
             reader = csv.DictReader(f)
             data = [item for item in reader]
-            self.keys = [item[self.key_attr] for item in data]
-            vectors = [json.loads(item[self.vector_attr]) for item in data]
+            self.keys = [item[key_attr] for item in data]
+            vectors = [json.loads(item[vector_attr]) for item in data]
             self.vectors = np.array(vectors, dtype='float32')
 
+            self.vectors_count = len(vectors)
             self.has_data = True
 
     def set_data(self, data, key_attr='name', vector_attr='vector'):
