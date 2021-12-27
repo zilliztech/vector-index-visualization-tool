@@ -61,3 +61,19 @@ export const vecCmp = (vecs: IVecComp[], key: string) => {
   res.reverse();
   return res;
 };
+
+export const generateRandomSamples = (len: number, k: number) => {
+  if (len <= k) {
+    return [...Array(len)].map((_, i) => i);
+  }
+  const res = [] as number[];
+  while (k--) {
+    const tmp = Math.floor(Math.random() * len);
+    if (res.indexOf(tmp) >= 0) {
+      k += 1;
+    } else {
+      res.push(tmp);
+    }
+  }
+  return res;
+};

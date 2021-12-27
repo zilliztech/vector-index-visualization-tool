@@ -10,9 +10,9 @@ from custom_types import NodeType
 
 class FaissIvfIndex(BaseIndex):
     def __init__(self):
-        self.nlist = 32
+        self.nlist = 256
 
-        self.nprobe = 4
+        self.nprobe = 8
 
         self.k = 8
 

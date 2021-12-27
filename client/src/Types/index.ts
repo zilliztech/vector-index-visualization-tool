@@ -132,6 +132,10 @@ export interface IStore {
 
   searchById: () => void;
   searchStatus: string;
+
+  vectors_count: number;
+  set_vectors_count: () => void;
+
 }
 
 export interface IIndexParam {

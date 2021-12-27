@@ -6,6 +6,7 @@ import {
   set_index_search_params,
   set_index_vis_params,
   search_by_id,
+  get_vectors_count,
 } from "Server";
 import { runInAction } from "mobx";
 import { ILevel, IStore } from "Types";
@@ -87,6 +88,12 @@ const createStore = () => {
       } else {
         this.searchStatus = res.msg;
       }
+    },
+
+    vectors_count: 0,
+    async set_vectors_count() {
+      const { count=0 } = await get_vectors_count();
+      this.vectors_count = count;
     },
   } as IStore;
 };

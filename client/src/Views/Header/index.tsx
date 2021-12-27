@@ -1,14 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   makeStyles,
   Theme,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button,
 } from "@material-ui/core";
+import { useGlobalStore } from "Store";
+import SearchDialog from "./SearchDialog";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -47,6 +43,10 @@ const Header = () => {
   const handleSearchClose = () => {
     setSearchOpen(false);
   };
+  const store = useGlobalStore();
+  useEffect(() => {
+    store.set_vectors_count();
+  }, []);
   return (
     <div className={classes.root}>
       <div className={classes.title}>Visualiztion for ANNS</div>
@@ -64,29 +64,3 @@ const Header = () => {
 };
 
 export default Header;
-
-const SearchDialog = ({
-  open,
-  handleClose,
-}: {
-  open: boolean;
-  handleClose: () => void;
-}) => {
-  const handleClickClose = () => {
-    console.log("handleClickClose");
-    handleClose();
-  };
-  return (
-    <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Search</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          Select an image as the search target.
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClickClose}>OK</Button>
-      </DialogActions>
-    </Dialog>
-  );
-};

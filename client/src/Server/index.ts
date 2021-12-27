@@ -66,4 +66,10 @@ export const search_by_id = (id: number) => {
   }) as Promise<IVisRes>;
 };
 
-export const get_image_url = (name: string) => baseUrl + "images/" + name;
+export const get_vectors_count = () => {
+  const url = "get_vectors_count";
+  return fetchData(url) as Promise<{ count?: number }>;
+};
+
+export const get_image_url = (name: string | number) =>
+  baseUrl + "image_id/" + name;

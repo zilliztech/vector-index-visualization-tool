@@ -7,11 +7,12 @@ from flask import Flask, request, jsonify, send_from_directory
 import sys
 import os
 # compatibility when run in 'server/'
-server_dir = 'server'
-if server_dir in os.path.basename(os.getcwd()):
-    sys.path.append('./index')
-else:
-    sys.path.append('./server/index')
+# server_dir = 'server'
+# if server_dir in os.path.basename(os.getcwd()):
+#     sys.path.append('./index')
+# else:
+#     sys.path.append('./server/index')
+sys.path.append('./index')
 from index_manage import Index
 
 
@@ -116,7 +117,8 @@ def get_image_by_id(fileId):
 
 @app.route('/get_vectors_count')
 def get_vectors_count():
-    return jsonify({'count': index.vectors_count})
+    print('get vectors count', index.vectors_count)
+    return jsonify({ 'count': index.vectors_count })
 
 if __name__ == '__main__':
     app.run(debug=False, port=12357)
