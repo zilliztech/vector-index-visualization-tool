@@ -97,21 +97,22 @@ def set_vis_params():
 
 @app.route('/images/<filename>')
 def get_file_by_name(filename):
-    return send_from_directory('/Users/mintian/minmin/data/JPEGImages', filename)
+    print('get image by name:', filename)
+    return send_from_directory('./data/images', filename)
 
 
 @app.route('/image_id/<fileId>')
 def get_image_by_id(fileId):
     filename = index.data.id2key(fileId)
-    print(fileId, filename)
-    return send_from_directory('/Users/mintian/minmin/data/JPEGImages', filename)
+    print('get image by id (%s): %s' % (fileId, filename))
+    return send_from_directory('./data/images', filename)
 
 
-@app.route('/test_id/<fileId>')
-def get_test_file_by_id(fileId):
-    filename = index.data.test_id2key(fileId)
-    print(fileId, filename)
-    return send_from_directory('/Users/mintian/minmin/data/JPEGImages', filename)
+# @app.route('/test_id/<fileId>')
+# def get_test_file_by_id(fileId):
+#     filename = index.data.test_id2key(fileId)
+#     print(fileId, filename)
+#     return send_from_directory('./data/images', filename)
 
 
 if __name__ == '__main__':

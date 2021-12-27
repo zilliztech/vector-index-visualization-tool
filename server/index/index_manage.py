@@ -7,10 +7,13 @@ class Index:
     def __init__(self):
         self.ivf_flat = FaissIvfIndex()
         self.hnsw = HNSWIndex()
-        self.data = Data()
 
-        self.index_type = 'hnsw'
-        self.index = self.hnsw
+        self.data = Data()
+        self.vectors_path = "./data/vectors.csv"
+        self.data.init_vectors(self.vectors_path)
+
+        self.set_index_type('ivf_flat')
+        self.index.set_vectors(self.data.vectors)
 
     def set_index_type(self, index_type):
         if index_type == 'hnsw':
@@ -43,7 +46,7 @@ class Index:
     def search_by_id(self, id):
         # if not self.data.has_data:
         #     return None
-        vis_res = self.index.get_search_vis_data(self.data.test_vectors[id])
+        vis_res = self.index.get_search_vis_data(self.data.vectors[id])
         # self.data.map_keys(vis_res)
         return vis_res
     

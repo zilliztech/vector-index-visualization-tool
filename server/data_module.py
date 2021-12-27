@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import csv
 
 
 class Data:
@@ -7,7 +8,19 @@ class Data:
         self.vectors = []
         self.keys = []
         self.has_data = False
-        self.test_number = 10
+        # self.test_number = 10
+        self.key_attr = 'name'
+        self.vector_attr = 'vector'
+
+    def init_vectors(self, vectors_path):
+        with open(vectors_path) as f:
+            reader = csv.DictReader(f)
+            data = [item for item in reader]
+            self.keys = [item[self.key_attr] for item in data]
+            vectors = [json.loads(item[self.vector_attr]) for item in data]
+            self.vectors = np.array(vectors, dtype='float32')
+
+            self.has_data = True
 
     def set_data(self, data, key_attr='name', vector_attr='vector'):
         if len(data) == 0:
@@ -19,11 +32,11 @@ class Data:
         self.vectors = [
             np.array(json.loads(d[vector_attr]), dtype='float32') for d in data]
 
-        self.train_keys = self.keys[:-self.test_number]
-        self.train_vectors = self.vectors[:-self.test_number]
+        # self.train_keys = self.keys[:-self.test_number]
+        # self.train_vectors = self.vectors[:-self.test_number]
 
-        self.test_keys = self.keys[-self.test_number:]
-        self.test_vectors = self.vectors[-self.test_number:]
+        # self.test_keys = self.keys[-self.test_number:]
+        # self.test_vectors = self.vectors[-self.test_number:]
 
     def key2id(self, key):
         if key not in self.keys:
@@ -33,16 +46,16 @@ class Data:
     def id2key(self, id):
         id = int(id)
         if id not in range(len(self.keys)):
-            return id
+            return str(id)
         else:
             return self.keys[id]
 
-    def test_id2key(self, _id):
-        id = int(_id) + len(self.train_keys)
-        if id not in range(len(self.keys)):
-            return -1
-        else:
-            return self.keys[id]
+    # def test_id2key(self, _id):
+    #     id = int(_id) + len(self.train_keys)
+    #     if id not in range(len(self.keys)):
+    #         return -1
+    #     else:
+    #         return self.keys[id]
 
     def map_keys(self, vis_res):
         for level_data in vis_res:
