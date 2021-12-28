@@ -16,11 +16,21 @@ import StarIcon from "@mui/icons-material/Star";
 const IndexTypeDialog = observer(
   ({ open, handleClose }: { open: boolean; handleClose: () => void }) => {
     const store = useGlobalStore();
-    const { indexTypeList, indexType, setIndexType, searchById } = store;
-    const handleClickClose = () => searchById();
+    const {
+      indexTypeList,
+      indexType,
+      setIndexType,
+      // searchById
+    } = store;
+    // const handleClickClose = () => searchById();
 
     return (
-      <Dialog open={open} onClose={handleClose} fullWidth={true} maxWidth={'xs'} >
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        fullWidth={true}
+        maxWidth={"xs"}
+      >
         <DialogTitle>Select Index Type</DialogTitle>
         <DialogContent>
           {/* <DialogContentText>Select an index method</DialogContentText> */}
