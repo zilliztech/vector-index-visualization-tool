@@ -1,10 +1,7 @@
 import React from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
-import {
-  NodeType,
-  LevelStatus,
-} from "Types";
+import { NodeType, LevelStatus } from "Types";
 import { useClientRect, useLevelStatus } from "Hooks";
 import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
 import ZoomInMapIcon from "@mui/icons-material/ZoomInMap";
@@ -45,6 +42,29 @@ const IVFFlatVoronoiArea = observer(() => {
     width,
     height,
   });
+
+  // console.log('fineLevelNodes', fineLevelNodes);
+
+  const nearestFineNodeId = visData[1].fine_ids[0];
+  const nearestFineNode_fineLevel = fineLevelNodes.find(
+    (node) => node.id == nearestFineNodeId
+  );
+  const nearestFineNode_clusterId = nearestFineNode_fineLevel?.cluster_id;
+  const nearestFineNode_coarseLevel = coarseLevelNodes.find(
+    (node) => node.cluster_id == nearestFineNode_clusterId
+  );
+  console.log(nearestFineNode_fineLevel, nearestFineNode_coarseLevel);
+  const fineNodes_coarseLevel = coarseLevelNodes.filter(
+    (node) => node.type === NodeType.Fine
+  );
+  const centerFineNode_coarseLevel = fineNodes_coarseLevel.reduce(
+    (acc, node) => ({
+      x: acc.x + node.x / fineNodes_coarseLevel.length,
+      y: acc.y + node.y / fineNodes_coarseLevel.length,
+    }),
+    { x: 0, y: 0 }
+  );
+  console.log(centerFineNode_coarseLevel);
 
   const enterTime = 1.5;
   const exitTime = 1;
