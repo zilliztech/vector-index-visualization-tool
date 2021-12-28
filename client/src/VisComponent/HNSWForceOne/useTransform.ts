@@ -1,6 +1,4 @@
-
-
-import {ILevel, TCoord} from "Types";
+import { ILevel, TCoord } from "Types";
 
 // Project: [width, height] => [forceWidth, forceHeight] with bias.
 export const useTransform = ({

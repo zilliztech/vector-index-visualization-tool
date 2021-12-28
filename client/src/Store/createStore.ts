@@ -14,8 +14,8 @@ import { ILevel, IStore } from "Types";
 const indexTypes = ["ivf_flat", "hnsw"];
 
 const visTypeOptions = {
-  hnsw: ["force", "force-dist", "force-one"],
-  ivf_flat: ["project", "voronoi", "voronoi-area"],
+  hnsw: ["force-one", "force", "force-dist"],
+  ivf_flat: ["voronoi-area", "project", "voronoi"],
 } as { [key: string]: string[] };
 
 const defaultIndexType = "hnsw";
@@ -25,12 +25,13 @@ const createStore = () => {
   return {
     indexTypeList: indexTypes,
     indexType: defaultIndexType,
-    setIndexType(indexType: string) {
+    async setIndexType(indexType: string) {
       this.indexType = indexType;
       this.visType = visTypeOptions[indexType][0];
-      set_index_type(indexType);
 
       this.searchStatus = "pending";
+      await set_index_type(indexType);
+      this.searchById();
     },
     visType: defaultVisType,
     get visTypeList() {
@@ -92,7 +93,7 @@ const createStore = () => {
 
     vectors_count: 0,
     async set_vectors_count() {
-      const { count=0 } = await get_vectors_count();
+      const { count = 0 } = await get_vectors_count();
       this.vectors_count = count;
     },
   } as IStore;
