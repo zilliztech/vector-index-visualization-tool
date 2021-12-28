@@ -78,7 +78,11 @@ const AboutDialog = observer(
               param.type === "select" ? (
                 <CustomSelect
                   label={param.label}
-                  value={buildParams[param.value] || param.optionValues[0]}
+                  value={
+                    buildParams[param.value] ||
+                    param.defaultValue ||
+                    param.optionValues[0]
+                  }
                   setValue={(value) => handleSetBuildParams(param.value, value)}
                   options={param.optionValues}
                   labels={param.optionLabels}
@@ -93,7 +97,11 @@ const AboutDialog = observer(
               param.type === "select" ? (
                 <CustomSelect
                   label={param.label}
-                  value={searchParams[param.value] || param.optionValues[0]}
+                  value={
+                    searchParams[param.value] ||
+                    param.defaultValue ||
+                    param.optionValues[0]
+                  }
                   setValue={(value) =>
                     handleSetSearchParams(param.value, value)
                   }
