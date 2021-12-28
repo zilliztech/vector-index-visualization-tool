@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
-  makeStyles,
-  Theme,
   Dialog,
   DialogTitle,
   DialogContent,
