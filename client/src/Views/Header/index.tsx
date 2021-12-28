@@ -70,7 +70,7 @@ const Header = () => {
   };
 
   const store = useGlobalStore();
-  const { set_vectors_count, initIndexType } = store;
+  const { set_vectors_count } = store;
   useEffect(() => {
     set_vectors_count();
   }, []);

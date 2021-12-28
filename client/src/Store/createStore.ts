@@ -27,11 +27,12 @@ const createStore = () => {
     indexType: defaultIndexType,
     async setIndexType(indexType: string) {
       console.log("setIndexType", indexType);
-      this.indexType = indexType;
-      this.visType = visTypeOptions[indexType][0];
 
       this.searchStatus = "pending";
       await set_index_type(indexType);
+      
+      this.indexType = indexType;
+      this.visType = visTypeOptions[indexType][0];
       // this.searchById();
     },
     initIndexType() {

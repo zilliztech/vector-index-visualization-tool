@@ -151,10 +151,10 @@ const HNSWForceOne = observer(() => {
 
   const getNodeR = (node: INode, level: number) => {
     if (node.type === NodeType.Fine && level === visData.length - 1) {
-      return 5;
+      return 4.5;
     }
     if (node.type === NodeType.Fine || node.type === NodeType.Candidate) {
-      return 4;
+      return 3.5;
     }
     return 2;
   };
@@ -285,7 +285,7 @@ const HNSWForceOne = observer(() => {
                           strokeWidth={
                             link.type === LinkType.Searched ||
                             link.type === LinkType.Fine
-                              ? 7
+                              ? 6
                               : 1
                           }
                           x1={transform(nodeCoordMap[link.source], level)[0]}

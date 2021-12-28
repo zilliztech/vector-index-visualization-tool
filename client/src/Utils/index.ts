@@ -70,7 +70,6 @@ export const vecCmp = (vecs: IVecComp[], key: string) => {
   angles.sort((a, b) => a._angle - b._angle);
 
   const res = angles.map((vec) => (vec as any)[key]);
-  console.log(res);
   return res;
 };
 
