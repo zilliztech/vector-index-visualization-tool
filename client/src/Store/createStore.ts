@@ -18,7 +18,7 @@ const visTypeOptions = {
   ivf_flat: ["voronoi-area", "project", "voronoi"],
 } as { [key: string]: string[] };
 
-const defaultIndexType = "hnsw";
+const defaultIndexType = "ivf_flat";
 const defaultVisType = visTypeOptions[defaultIndexType][0];
 
 const createStore = () => {

@@ -41,7 +41,40 @@ interface IVecComp {
   y: number;
 }
 
+export const calAngle = (x: number, y: number) => {
+  let angle = (Math.atan(x / y) / Math.PI) * 180;
+  if (angle < 0) {
+    if (x < 0) {
+      angle += 360;
+    } else {
+      angle += 180;
+    }
+  } else {
+    if (x < 0) {
+      angle += 180;
+    }
+  }
+  return angle;
+};
+
 export const vecCmp = (vecs: IVecComp[], key: string) => {
+  const center = {
+    x: vecs.reduce((s, a) => s + a.x, 0) / vecs.length,
+    y: vecs.reduce((s, a) => s + a.y, 0) / vecs.length,
+  };
+  const angles = vecs.map((vec) =>
+    Object.assign({}, vec, {
+      _angle: calAngle(vec.x - center.x, -vec.y + center.y),
+    })
+  );
+  angles.sort((a, b) => a._angle - b._angle);
+
+  const res = angles.map((vec) => (vec as any)[key]);
+  console.log(res);
+  return res;
+};
+
+export const vecCmp2 = (vecs: IVecComp[], key: string) => {
   const center = {
     x: vecs.reduce((s, a) => s + a.x, 0) / vecs.length,
     y: vecs.reduce((s, a) => s + a.y, 0) / vecs.length,
@@ -55,7 +88,7 @@ export const vecCmp = (vecs: IVecComp[], key: string) => {
     }
     const det =
       (a.x - center.x) * (b.y - center.y) - (b.x - center.x) * (a.y - center.y);
-    return det > 0 ? 1 : -1;
+    return det < 0 ? -1 : 1;
   });
   const res = vecs.map((vec) => (vec as any)[key]);
   res.reverse();

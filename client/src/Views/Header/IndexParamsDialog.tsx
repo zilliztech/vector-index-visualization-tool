@@ -18,7 +18,7 @@ const AboutDialog = observer(
     const { indexTypeList, indexType, setIndexType } = store;
 
     return <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Index Type</DialogTitle>
+      <DialogTitle>Index Params Setting</DialogTitle>
       <DialogContent>
         <DialogContentText>Select an index method</DialogContentText>
       </DialogContent>
