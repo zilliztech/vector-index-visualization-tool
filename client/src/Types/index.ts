@@ -6,6 +6,8 @@ export enum NodeType {
   Target,
 }
 
+export type TParams = { [key: string]: string | number };
+
 export enum LinkType {
   None = -1,
   Visited = 0,
@@ -111,6 +113,7 @@ export interface IStore {
   indexTypeList: string[];
   indexType: string;
   setIndexType: (indexType: string) => void;
+  initIndexType: () => void;
 
   visTypeList: string[];
   visType: string;
@@ -120,13 +123,14 @@ export interface IStore {
   setTargetId: (targetId: number) => void;
 
   setData: (file: File) => void;
-  buildParams: { [key: string]: string | number };
-  searchParams: { [key: string]: string | number };
-  setBuildParams: (params: { [key: string]: string | number }) => void;
-  setSearchParams: (params: { [key: string]: string | number }) => void;
+  buildParams: TParams;
+  searchParams: TParams;
+  setBuildParams: (params: TParams) => void;
+  setSearchParams: (params: TParams) => void;
+  initParams: (buildParams: TParams, searchParams: TParams) => void;
 
-  visParams: { [key: string]: string | number };
-  setVisParams: (params: { [key: string]: string | number }) => void;
+  visParams: TParams;
+  setVisParams: (params: TParams) => void;
 
   visData: ILevel[];
 
@@ -135,7 +139,6 @@ export interface IStore {
 
   vectors_count: number;
   set_vectors_count: () => void;
-
 }
 
 export interface IIndexParam {
@@ -144,6 +147,7 @@ export interface IIndexParam {
   type: string;
   optionLabels?: string[] | number[];
   optionValues: string[] | number[];
+  defaultValue?: string | number;
 }
 
 export interface IIndexParams {

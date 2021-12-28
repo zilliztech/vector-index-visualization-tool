@@ -70,10 +70,9 @@ const Header = () => {
   };
 
   const store = useGlobalStore();
-  const { set_vectors_count, setIndexType, indexType } = store;
+  const { set_vectors_count, initIndexType } = store;
   useEffect(() => {
     set_vectors_count();
-    setIndexType(indexType);
   }, []);
   return (
     <div className={classes.root}>

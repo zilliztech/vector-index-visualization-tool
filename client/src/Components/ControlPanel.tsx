@@ -18,8 +18,10 @@ const useStyles = makeStyles({
     marginBottom: 8,
   },
   container: {
-
-  }
+    display: "flex",
+    justifyContent: "space-between",
+    flexWrap: "wrap"
+  },
 });
 
 const ControlPanel = (props: any) => {
@@ -27,7 +29,7 @@ const ControlPanel = (props: any) => {
   return (
     <div className={classes.root}>
       <div className={classes.header}>{props.header}</div>
-      {props.children}
+      <div className={classes.container}>{props.children}</div>
     </div>
   );
 };

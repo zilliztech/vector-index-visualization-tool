@@ -9,7 +9,7 @@ import {
   get_vectors_count,
 } from "Server";
 import { runInAction } from "mobx";
-import { ILevel, IStore } from "Types";
+import { ILevel, IStore, TParams } from "Types";
 
 const indexTypes = ["ivf_flat", "hnsw"];
 
@@ -26,12 +26,17 @@ const createStore = () => {
     indexTypeList: indexTypes,
     indexType: defaultIndexType,
     async setIndexType(indexType: string) {
+      console.log("setIndexType", indexType);
       this.indexType = indexType;
       this.visType = visTypeOptions[indexType][0];
 
       this.searchStatus = "pending";
       await set_index_type(indexType);
-      this.searchById();
+      // this.searchById();
+    },
+    initIndexType() {
+      console.log("initIndexType");
+      this.setIndexType(defaultIndexType);
     },
     visType: defaultVisType,
     get visTypeList() {
@@ -52,21 +57,26 @@ const createStore = () => {
       set_data(file);
     },
     buildParams: {},
-    async setBuildParams(params: { [key: string]: string | number }) {
+    async setBuildParams(params: TParams) {
       this.buildParams = Object.assign({}, this.buildParams, params);
       set_index_build_params(params);
     },
     searchParams: {},
-    async setSearchParams(params: { [key: string]: string | number }) {
+    async setSearchParams(params: TParams) {
       this.searchParams = Object.assign({}, this.searchParams, params);
       set_index_search_params(params);
+    },
+    async initParams(buildParams: TParams, searchParams: TParams) {
+      await set_index_build_params(buildParams);
+      await set_index_search_params(searchParams);
+      this.searchById();
     },
 
     visParams: {
       project_method: "",
       project_params: "",
     },
-    async setVisParams(params: { [key: string]: string | number }) {
+    async setVisParams(params: TParams) {
       for (let key in params) {
         this.visParams[key] = params[key];
       }

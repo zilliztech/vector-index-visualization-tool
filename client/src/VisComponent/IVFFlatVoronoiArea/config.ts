@@ -6,7 +6,8 @@ const params = {
       label: "Nlist",
       value: "nlist",
       type: "select",
-      optionValues: [64, 128, 256, 512],
+      optionValues: [64, 96, 128, 160, 200, 256, 320],
+      defaultValue: 256,
     },
   ],
   search: [
@@ -14,13 +15,15 @@ const params = {
       label: "Top K",
       value: "k",
       type: "select",
-      optionValues: [4, 8, 16, 32],
+      optionValues: [4, 8, 16, 24, 32],
+      defaultValue: 8,
     },
     {
       label: "Nprobe",
       value: "nprobe",
       type: "select",
-      optionValues: [4, 8, 16, 32, 64, 128],
+      optionValues: [4, 8, 12, 16],
+      defaultValue: 8,
     },
   ],
   vis: [

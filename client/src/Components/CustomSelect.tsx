@@ -12,9 +12,9 @@ import {
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     formControl: {
-      marginRight: theme.spacing(3),
+      marginRight: theme.spacing(2),
       marginBottom: theme.spacing(1),
-      minWidth: '35%',
+      minWidth: '40%',
     },
   })
 );
