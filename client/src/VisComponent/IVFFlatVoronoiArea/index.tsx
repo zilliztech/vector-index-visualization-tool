@@ -1,13 +1,15 @@
 import React from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
-import { NodeType, LevelStatus } from "Types";
+import { NodeType, LevelStatus, TCoord } from "Types";
 import { useClientRect, useLevelStatus } from "Hooks";
 import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
 import ZoomInMapIcon from "@mui/icons-material/ZoomInMap";
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
 import { useCoarseLevelNodes } from "./useCoarseLevelNodes";
 import { useFineLevelNodes } from "./useFineLevelNodes";
+import { useTargetNode } from "./useTargetNode";
+import { addCentroidOrder } from "./addCentroidOrder";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -34,6 +36,23 @@ const IVFFlatVoronoiArea = observer(() => {
     height,
   });
 
+  const targetNodeBias = 30;
+  const { targetNode_CoarseLevelProjection, isTargetLeft } = useTargetNode({
+    checked: coarsLevelForceFinished,
+    visData,
+    coarseLevelNodes,
+    width,
+    bias: targetNodeBias,
+  });
+
+  const origin = [width * (isTargetLeft ? 0.35 : 0.65), height / 2] as TCoord;
+  addCentroidOrder({
+    nodes: coarseLevelNodes.filter((node) => node.type === NodeType.Fine),
+    width,
+    height,
+    origin,
+  });
+
   const { fineLevelForceFinished, fineLevelNodes } = useFineLevelNodes({
     data: visData[1],
     coarseLevelNodes,
@@ -41,30 +60,8 @@ const IVFFlatVoronoiArea = observer(() => {
     searchStatus,
     width,
     height,
+    origin,
   });
-
-  // console.log('fineLevelNodes', fineLevelNodes);
-
-  const nearestFineNodeId = visData[1].fine_ids[0];
-  const nearestFineNode_fineLevel = fineLevelNodes.find(
-    (node) => node.id == nearestFineNodeId
-  );
-  const nearestFineNode_clusterId = nearestFineNode_fineLevel?.cluster_id;
-  const nearestFineNode_coarseLevel = coarseLevelNodes.find(
-    (node) => node.cluster_id == nearestFineNode_clusterId
-  );
-  console.log(nearestFineNode_fineLevel, nearestFineNode_coarseLevel);
-  const fineNodes_coarseLevel = coarseLevelNodes.filter(
-    (node) => node.type === NodeType.Fine
-  );
-  const centerFineNode_coarseLevel = fineNodes_coarseLevel.reduce(
-    (acc, node) => ({
-      x: acc.x + node.x / fineNodes_coarseLevel.length,
-      y: acc.y + node.y / fineNodes_coarseLevel.length,
-    }),
-    { x: 0, y: 0 }
-  );
-  console.log(centerFineNode_coarseLevel);
 
   const enterTime = 1.5;
   const exitTime = 1;
@@ -149,6 +146,34 @@ const IVFFlatVoronoiArea = observer(() => {
                   </text> */}
                 </>
               ))}
+
+            <g id="target">
+              {targetNode_CoarseLevelProjection.x > 0 && (
+                <circle
+                  cx={
+                    levelStatus.status === LevelStatus.Enter
+                      ? targetNode_CoarseLevelProjection.x
+                      : origin[0]
+                  }
+                  cy={
+                    levelStatus.status === LevelStatus.Enter
+                      ? targetNode_CoarseLevelProjection.y
+                      : origin[1]
+                  }
+                  fill="none"
+                  r="11"
+                  stroke="#fff"
+                  strokeWidth="7"
+                  style={{
+                    transition: `all ${
+                      levelStatus.status === LevelStatus.Enter
+                        ? enterTime
+                        : exitTime
+                    }s ease`,
+                  }}
+                />
+              )}
+            </g>
           </g>
         )}
 
@@ -214,6 +239,18 @@ const IVFFlatVoronoiArea = observer(() => {
                 }}
               />
             ))}
+            <g id="target">
+              {targetNode_CoarseLevelProjection.x > 0 && (
+                <circle
+                  cx={origin[0]}
+                  cy={origin[1]}
+                  fill="none"
+                  r="11"
+                  stroke="#fff"
+                  strokeWidth="7"
+                />
+              )}
+            </g>
           </g>
         )}
 

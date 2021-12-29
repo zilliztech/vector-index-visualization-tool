@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import * as d3 from "d3";
 import {
@@ -6,9 +5,9 @@ import {
   IIVFVoronoiAreaNode,
   IIVFVoronoiAreaFineNode,
   NodeType,
+  TCoord,
 } from "Types";
 import { get } from "lodash";
-
 
 export const useFineLevelNodes = ({
   data,
@@ -17,6 +16,7 @@ export const useFineLevelNodes = ({
   searchStatus,
   width,
   height,
+  origin,
 }: {
   data: ILevel;
   coarseLevelNodes: IIVFVoronoiAreaNode[];
@@ -24,6 +24,7 @@ export const useFineLevelNodes = ({
   searchStatus: string;
   width: number;
   height: number;
+  origin: TCoord;
 }) => {
   const [fineLevelNodes, setFineLevelNodes] = useState<
     IIVFVoronoiAreaFineNode[]
@@ -84,7 +85,6 @@ export const useFineLevelNodes = ({
       // const clusterIdList = Array.from(
       //   new Set(nodes.map((node) => node.cluster_id))
       // );
-      const origin = [width / 2, height / 2];
       const maxR = Math.min(width, height) * 0.5 - 5;
       // const angleStep = (Math.PI * 2) / clusterIdList.length;
       // const clusterCenterList = clusterIdList.map((_, i) => [
