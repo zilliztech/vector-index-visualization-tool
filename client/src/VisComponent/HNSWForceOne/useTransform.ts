@@ -11,7 +11,7 @@ export const useTransform = ({
   xBias = 0.68,
   yBias = 0.7,
   yOver = 0.35,
-  padding = [30, 20],
+  padding = [30, 20, 400, 20],
 }: {
   width: number;
   height: number;
@@ -22,23 +22,23 @@ export const useTransform = ({
   xBias?: number;
   yBias?: number;
   yOver?: number;
-  padding?: TCoord;
+  padding?: [number, number, number, number];
 }) => {
   let levelMapCoords = visData.map((_) => []) as TCoord[][];
   let transform = ([x, y]: TCoord, level: number) => [0, 0] as TCoord;
   if (width > 0 && height > 0 && searchStatus === "ok") {
     const levelCount = visData.length;
     const levelHeight =
-      (height - padding[1] * 2) / (levelCount - (levelCount - 1) * yOver);
+      (height - padding[1] -padding[3]) / (levelCount - (levelCount - 1) * yOver);
     transform = ([x, y]: TCoord, level: number) => {
       const _x = x / forceWidth;
       const _y = y / forceHeight;
 
       const newX =
         padding[0] +
-        (width - padding[0] * 2) * xBias +
-        _x * (width - padding[0] * 2) * (1 - xBias) -
-        _y * (width - padding[0] * 2) * xBias;
+        (width - padding[0] - padding[2]) * xBias +
+        _x * (width - padding[0] - padding[2]) * (1 - xBias) -
+        _y * (width - padding[0] - padding[2]) * xBias;
       const newY =
         padding[1] +
         levelHeight * (1 - yOver) * level +

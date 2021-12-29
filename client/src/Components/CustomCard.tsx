@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     left: "6%",
   },
   rootRight: {
-    right: "6%",
+    right: "4%",
   },
   // gallery: {
   //   display: "flex",
@@ -111,6 +111,7 @@ export const CustomCard = (props: any) => {
           pr: 2,
           background: "#ccc",
           maxHeight: "100%",
+          minHeight: "20%",
           overflow: "auto",
         }}
       >
