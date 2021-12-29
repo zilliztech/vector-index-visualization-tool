@@ -70,6 +70,7 @@ const createStore = () => {
     async initParams(buildParams: TParams, searchParams: TParams) {
       this.buildParams = Object.assign({}, this.buildParams, buildParams);
       this.searchParams = Object.assign({}, this.searchParams, searchParams);
+      await set_index_type(this.indexType);
       await set_index_build_params(buildParams);
       await set_index_search_params(searchParams);
       this.searchById();

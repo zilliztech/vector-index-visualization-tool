@@ -7,6 +7,7 @@ import { useTransform } from "./useTransform";
 import { useNodeCoordMap } from "./useNodeCoordMap";
 import { useTransitionTime, ETransType } from "./useTransitionTime";
 import * as d3 from "d3";
+import Explanation from "./Explanation";
 
 const angleXYs = [
   [0, 1, 0, 0],
@@ -170,147 +171,153 @@ const HNSWForceOne = observer(() => {
   };
 
   return (
-    <svg
-      id={svgId}
-      width="100%"
-      height="100%"
-      style={{ backgroundColor: "#000", visibility: "visible" }}
-    >
-      <defs>
-        {angleXYs.map((angle, i) => (
-          <linearGradient
-            id={`line-gradient-${i * 45}`}
-            // gradientTransform="rotate(90)"
-            // gradientUnits="userSpaceOnUse"
-            x1={angle[0]}
-            y1={angle[1]}
-            x2={angle[2]}
-            y2={angle[3]}
-          >
-            <stop offset="5%" stop-color="#06F3AF" />
-            <stop offset="95%" stop-color="#DBFFF5" />
+    <>
+      <svg
+        id={svgId}
+        width="100%"
+        height="100%"
+        style={{ backgroundColor: "#000", visibility: "visible" }}
+      >
+        <defs>
+          {angleXYs.map((angle, i) => (
+            <linearGradient
+              id={`line-gradient-${i * 45}`}
+              // gradientTransform="rotate(90)"
+              // gradientUnits="userSpaceOnUse"
+              x1={angle[0]}
+              y1={angle[1]}
+              x2={angle[2]}
+              y2={angle[3]}
+            >
+              <stop offset="5%" stop-color="#06F3AF" />
+              <stop offset="95%" stop-color="#DBFFF5" />
+            </linearGradient>
+          ))}
+          <linearGradient id={`fine-gradient`} x1={0} y1={0} x2={1} y2={1}>
+            <stop offset="5%" stop-color="#06AFF2" />
+            <stop offset="95%" stop-color="#CCF1FF" />
           </linearGradient>
-        ))}
-        <linearGradient id={`fine-gradient`} x1={0} y1={0} x2={1} y2={1}>
-          <stop offset="5%" stop-color="#06AFF2" />
-          <stop offset="95%" stop-color="#CCF1FF" />
-        </linearGradient>
-        <linearGradient id={`target-gradient`} x1={0} y1={0} x2={1} y2={1}>
-          <stop offset="5%" stop-color="#f03b20" />
-          <stop offset="95%" stop-color="#E3E1FF" />
-        </linearGradient>
-        <filter id="blur" x="0" y="0">
-          <feGaussianBlur stdDeviation="5" result="offset-blur" />
-          <feComposite
-            operator="out"
-            in="SourceGraphic"
-            in2="offset-blur"
-            result="inverse"
-          />
-          <feFlood flood-color="#444" flood-opacity=".95" result="color" />
-          <feComposite operator="in" in="color" in2="inverse" result="shadow" />
-          <feComposite operator="over" in="shadow" in2="SourceGraphic" />
-        </filter>
-      </defs>
-      {[...visData].reverse().map((levelData, _level) => {
-        const level = visData.length - 1 - _level;
-        return (
-          <g key={level} id={`level-${level}`}>
-            {levelMapCoords[level].length > 0 && (
-              <path
-                id="border"
-                d={`M${levelMapCoords[level]
-                  .map((coord) => `${coord}`)
-                  .join("L")}Z`}
-                fill="#222"
-                opacity="0.8"
-                filter={`url(#blur)`}
-              />
-            )}
-            {layoutFinished && (
-              <>
-                {level > 0 && (
-                  <line
-                    key={`intra-level-${level}`}
-                    id={`intra-level-${level}`}
-                    fill="none"
-                    opacity="0.7"
-                    stroke="url('#line-gradient-180')"
-                    // stroke="red"
-                    strokeWidth="8"
-                    strokeLinecap="round"
-                    x1={
-                      transform(
-                        nodeCoordMap[levelData.entry_ids[0]],
-                        level - 1
-                      )[0]
-                    }
-                    y1={
-                      transform(
-                        nodeCoordMap[levelData.entry_ids[0]],
-                        level - 1
-                      )[1]
-                    }
-                    x2={
-                      transform(
-                        nodeCoordMap[levelData.entry_ids[0]],
-                        level - 1
-                      )[0]
-                    }
-                    y2={
-                      transform(
-                        nodeCoordMap[levelData.entry_ids[0]],
-                        level - 1
-                      )[1]
-                    }
-                  />
-                )}
-                <g id="links-g">
-                  {levelData.links.map(
-                    (link) =>
-                      link.source in nodeCoordMap &&
-                      link.target in nodeCoordMap && (
-                        <line
-                          key={`link-${level}-${link.source}-${link.target}`}
-                          id={`link-${level}-${link.source}-${link.target}`}
-                          fill="none"
-                          opacity="0"
-                          strokeLinecap="round"
-                          stroke={
-                            link.type === LinkType.Searched ||
-                            link.type === LinkType.Fine
-                              ? getLineGradient(link)
-                              : "#ddd"
-                          }
-                          strokeWidth={
-                            link.type === LinkType.Searched ||
-                            link.type === LinkType.Fine
-                              ? 6
-                              : 1
-                          }
-                          x1={transform(nodeCoordMap[link.source], level)[0]}
-                          y1={transform(nodeCoordMap[link.source], level)[1]}
-                          x2={transform(nodeCoordMap[link.source], level)[0]}
-                          y2={transform(nodeCoordMap[link.source], level)[1]}
-                        />
-                      )
-                  )}
-                </g>
-                <g id="circles-g">
-                  {levelData.nodes.map((node) => (
-                    <ellipse
-                      key={node.id}
-                      id={`node-${level}-${node.id}`}
-                      opacity={0}
-                      cx={transform(nodeCoordMap[node.id], level)[0]}
-                      cy={transform(nodeCoordMap[node.id], level)[1]}
-                      fill={getNodeFill(node, level)}
-                      rx={getNodeR(node, level) + 1}
-                      ry={getNodeR(node, level)}
+          <linearGradient id={`target-gradient`} x1={0} y1={0} x2={1} y2={1}>
+            <stop offset="5%" stop-color="#f03b20" />
+            <stop offset="95%" stop-color="#E3E1FF" />
+          </linearGradient>
+          <filter id="blur" x="0" y="0">
+            <feGaussianBlur stdDeviation="5" result="offset-blur" />
+            <feComposite
+              operator="out"
+              in="SourceGraphic"
+              in2="offset-blur"
+              result="inverse"
+            />
+            <feFlood flood-color="#444" flood-opacity=".95" result="color" />
+            <feComposite
+              operator="in"
+              in="color"
+              in2="inverse"
+              result="shadow"
+            />
+            <feComposite operator="over" in="shadow" in2="SourceGraphic" />
+          </filter>
+        </defs>
+        {[...visData].reverse().map((levelData, _level) => {
+          const level = visData.length - 1 - _level;
+          return (
+            <g key={level} id={`level-${level}`}>
+              {levelMapCoords[level].length > 0 && (
+                <path
+                  id="border"
+                  d={`M${levelMapCoords[level]
+                    .map((coord) => `${coord}`)
+                    .join("L")}Z`}
+                  fill="#222"
+                  opacity="0.8"
+                  filter={`url(#blur)`}
+                />
+              )}
+              {layoutFinished && (
+                <>
+                  {level > 0 && (
+                    <line
+                      key={`intra-level-${level}`}
+                      id={`intra-level-${level}`}
+                      fill="none"
+                      opacity="0.7"
+                      stroke="url('#line-gradient-180')"
+                      // stroke="red"
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                      x1={
+                        transform(
+                          nodeCoordMap[levelData.entry_ids[0]],
+                          level - 1
+                        )[0]
+                      }
+                      y1={
+                        transform(
+                          nodeCoordMap[levelData.entry_ids[0]],
+                          level - 1
+                        )[1]
+                      }
+                      x2={
+                        transform(
+                          nodeCoordMap[levelData.entry_ids[0]],
+                          level - 1
+                        )[0]
+                      }
+                      y2={
+                        transform(
+                          nodeCoordMap[levelData.entry_ids[0]],
+                          level - 1
+                        )[1]
+                      }
                     />
-                  ))}
-                </g>
-                {/* {level >= visData.length - 1 && (
+                  )}
+                  <g id="links-g">
+                    {levelData.links.map(
+                      (link) =>
+                        link.source in nodeCoordMap &&
+                        link.target in nodeCoordMap && (
+                          <line
+                            key={`link-${level}-${link.source}-${link.target}`}
+                            id={`link-${level}-${link.source}-${link.target}`}
+                            fill="none"
+                            opacity="0"
+                            strokeLinecap="round"
+                            stroke={
+                              link.type === LinkType.Searched ||
+                              link.type === LinkType.Fine
+                                ? getLineGradient(link)
+                                : "#ddd"
+                            }
+                            strokeWidth={
+                              link.type === LinkType.Searched ||
+                              link.type === LinkType.Fine
+                                ? 6
+                                : 1
+                            }
+                            x1={transform(nodeCoordMap[link.source], level)[0]}
+                            y1={transform(nodeCoordMap[link.source], level)[1]}
+                            x2={transform(nodeCoordMap[link.source], level)[0]}
+                            y2={transform(nodeCoordMap[link.source], level)[1]}
+                          />
+                        )
+                    )}
+                  </g>
+                  <g id="circles-g">
+                    {levelData.nodes.map((node) => (
+                      <ellipse
+                        key={node.id}
+                        id={`node-${level}-${node.id}`}
+                        opacity={0}
+                        cx={transform(nodeCoordMap[node.id], level)[0]}
+                        cy={transform(nodeCoordMap[node.id], level)[1]}
+                        fill={getNodeFill(node, level)}
+                        rx={getNodeR(node, level) + 1}
+                        ry={getNodeR(node, level)}
+                      />
+                    ))}
+                  </g>
+                  {/* {level >= visData.length - 1 && (
                   <g id="target-g">
                     <ellipse
                       cx={transform(targetCoord, level)[0]}
@@ -321,36 +328,38 @@ const HNSWForceOne = observer(() => {
                     />
                   </g>
                 )} */}
-                <g id="target-g">
-                  {level > 0 && (
-                    <line
-                      fill="none"
-                      stroke="#ccc"
-                      strokeWidth="2"
-                      opacity="0.5"
-                      x1={transform(targetCoord, level)[0]}
-                      y1={transform(targetCoord, level)[1]}
-                      x2={transform(targetCoord, level - 1)[0]}
-                      y2={transform(targetCoord, level - 1)[1]}
-                      strokeDasharray={5}
-                    />
-                  )}
-                  {(
-                    <ellipse
-                      cx={transform(targetCoord, level)[0]}
-                      cy={transform(targetCoord, level)[1]}
-                      fill="url(#target-gradient)"
-                      rx={5}
-                      ry={4}
-                    />
-                  )}
-                </g>
-              </>
-            )}
-          </g>
-        );
-      })}
-    </svg>
+                  <g id="target-g">
+                    {level > 0 && (
+                      <line
+                        fill="none"
+                        stroke="#ccc"
+                        strokeWidth="2"
+                        opacity="0.5"
+                        x1={transform(targetCoord, level)[0]}
+                        y1={transform(targetCoord, level)[1]}
+                        x2={transform(targetCoord, level - 1)[0]}
+                        y2={transform(targetCoord, level - 1)[1]}
+                        strokeDasharray={5}
+                      />
+                    )}
+                    {
+                      <ellipse
+                        cx={transform(targetCoord, level)[0]}
+                        cy={transform(targetCoord, level)[1]}
+                        fill="url(#target-gradient)"
+                        rx={5}
+                        ry={4}
+                      />
+                    }
+                  </g>
+                </>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+      <Explanation />
+    </>
   );
 });
 
