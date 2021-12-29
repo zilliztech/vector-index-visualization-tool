@@ -11,6 +11,8 @@ import { useFineLevelNodes } from "./useFineLevelNodes";
 import { useTargetNode } from "./useTargetNode";
 import { addCentroidOrder } from "./addCentroidOrder";
 
+import * as d3 from "d3";
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -46,11 +48,14 @@ const IVFFlatVoronoiArea = observer(() => {
   });
 
   const origin = [width * (isTargetLeft ? 0.35 : 0.65), height / 2] as TCoord;
+  const maxR = Math.min(width, height) * 0.5 - 5;
+
   addCentroidOrder({
     nodes: coarseLevelNodes.filter((node) => node.type === NodeType.Fine),
     width,
     height,
     origin,
+    maxR,
   });
 
   const { fineLevelForceFinished, fineLevelNodes } = useFineLevelNodes({
@@ -61,7 +66,16 @@ const IVFFlatVoronoiArea = observer(() => {
     width,
     height,
     origin,
+    maxR,
   });
+
+  const polarSticksNum = 4;
+  const minStick = maxR * 0.15;
+  const maxStick = maxR * 0.9;
+  const stepStick = (maxStick - minStick) / (polarSticksNum - 1);
+  const polarSticks = d3
+    .range(polarSticksNum)
+    .map((stick) => minStick + stepStick * stick);
 
   const enterTime = 1.5;
   const exitTime = 1;
@@ -179,6 +193,29 @@ const IVFFlatVoronoiArea = observer(() => {
 
         {levelStatus.level === 1 && (
           <g id="fine-level">
+            <g id="polar-sticks">
+              {polarSticks.map((stick) => (
+                <circle
+                  key={`stick-${stick}`}
+                  cx={origin[0]}
+                  cy={origin[1]}
+                  r={stick}
+                  fill="none"
+                  stroke="#06F3AF"
+                  strokeWidth="0.3"
+                  opacity={levelStatus.status === LevelStatus.Enter
+                    ? 0.7
+                    :0}
+                  style={{
+                    transition: `all ${
+                      levelStatus.status === LevelStatus.Enter
+                        ? enterTime
+                        : exitTime
+                    }s ease`,
+                  }}
+                />
+              ))}
+            </g>
             <g id="fine-centroid-cluster">
               {coarseLevelNodes
                 .filter((node) => node.type === NodeType.Fine)

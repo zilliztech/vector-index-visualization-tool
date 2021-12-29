@@ -18,14 +18,15 @@ export const addCentroidOrder = ({
   width,
   height,
   origin,
+  maxR,
 }: {
   nodes: IIVFVoronoiAreaNode[];
   width: number;
   height: number;
   origin: TCoord;
+  maxR: number;
 }) => {
   const clusterIdList = vecCmp(nodes, "cluster_id");
-  const maxR = Math.min(width, height) * 0.5 - 5;
   const angleStep = (Math.PI * 2) / clusterIdList.length;
   const clusterCenterList = clusterIdList.map(
     (_, i) =>

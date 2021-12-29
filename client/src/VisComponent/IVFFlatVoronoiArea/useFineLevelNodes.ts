@@ -17,6 +17,7 @@ export const useFineLevelNodes = ({
   width,
   height,
   origin,
+  maxR,
 }: {
   data: ILevel;
   coarseLevelNodes: IIVFVoronoiAreaNode[];
@@ -25,6 +26,7 @@ export const useFineLevelNodes = ({
   width: number;
   height: number;
   origin: TCoord;
+  maxR: number;
 }) => {
   const [fineLevelNodes, setFineLevelNodes] = useState<
     IIVFVoronoiAreaFineNode[]
@@ -85,7 +87,6 @@ export const useFineLevelNodes = ({
       // const clusterIdList = Array.from(
       //   new Set(nodes.map((node) => node.cluster_id))
       // );
-      const maxR = Math.min(width, height) * 0.5 - 5;
       // const angleStep = (Math.PI * 2) / clusterIdList.length;
       // const clusterCenterList = clusterIdList.map((_, i) => [
       //   origin[0] + (maxR / 2) * Math.sin(angleStep * (i + 0.5)),
