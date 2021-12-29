@@ -54,6 +54,7 @@ export const useTargetNode = ({
     x: nearestFineNode_coarseLevel.x + (_x / r) * bias,
     y: nearestFineNode_coarseLevel.y + (_y / r) * bias,
   };
-  const isTargetLeft = targetNode_CoarseLevelProjection.x < width / 2;
+  // const isTargetLeft = targetNode_CoarseLevelProjection.x < width / 2;
+  const isTargetLeft = centerFineNode_coarseLevel.x < width / 2;
   return { targetNode_CoarseLevelProjection, isTargetLeft };
 };

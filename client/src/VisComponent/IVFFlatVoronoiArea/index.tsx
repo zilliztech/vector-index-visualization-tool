@@ -10,6 +10,7 @@ import { useCoarseLevelNodes } from "./useCoarseLevelNodes";
 import { useFineLevelNodes } from "./useFineLevelNodes";
 import { useTargetNode } from "./useTargetNode";
 import { addCentroidOrder } from "./addCentroidOrder";
+import Explanation from "./Explanation";
 
 import * as d3 from "d3";
 
@@ -203,9 +204,7 @@ const IVFFlatVoronoiArea = observer(() => {
                   fill="none"
                   stroke="#06F3AF"
                   strokeWidth="0.3"
-                  opacity={levelStatus.status === LevelStatus.Enter
-                    ? 0.7
-                    :0}
+                  opacity={levelStatus.status === LevelStatus.Enter ? 0.7 : 0}
                   style={{
                     transition: `all ${
                       levelStatus.status === LevelStatus.Enter
@@ -291,7 +290,7 @@ const IVFFlatVoronoiArea = observer(() => {
           </g>
         )}
 
-        <g
+        {/* <g
           id="stepper"
           transform={`translate(${width - 50}, ${10})`}
           style={{
@@ -305,8 +304,13 @@ const IVFFlatVoronoiArea = observer(() => {
           ) : (
             <ZoomInMapIcon width="30" height="30" />
           )}
-        </g>
+        </g> */}
       </svg>
+      <Explanation
+        changeLevel={changeLevel}
+        levelStatus={levelStatus}
+        isTargetLeft={isTargetLeft}
+      />
     </div>
   );
 });

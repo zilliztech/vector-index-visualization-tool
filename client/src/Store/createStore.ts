@@ -30,7 +30,7 @@ const createStore = () => {
 
       this.searchStatus = "pending";
       await set_index_type(indexType);
-      
+
       this.indexType = indexType;
       this.visType = visTypeOptions[indexType][0];
       // this.searchById();
@@ -68,6 +68,8 @@ const createStore = () => {
       set_index_search_params(params);
     },
     async initParams(buildParams: TParams, searchParams: TParams) {
+      this.buildParams = Object.assign({}, this.buildParams, buildParams);
+      this.searchParams = Object.assign({}, this.searchParams, searchParams);
       await set_index_build_params(buildParams);
       await set_index_search_params(searchParams);
       this.searchById();

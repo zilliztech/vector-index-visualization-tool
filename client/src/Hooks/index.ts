@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import * as d3 from "d3";
-import { LevelStatus } from "Types";
+import { LevelStatus, TLevelStatus } from "Types";
 
 // 初始化，确定长宽
 export const useClientRect = ({ svgId }: { svgId: string }) => {
@@ -14,7 +14,7 @@ export const useClientRect = ({ svgId }: { svgId: string }) => {
 };
 
 export const useLevelStatus = ({ exitTime = 1000 }: { exitTime?: number }) => {
-  const [levelStatus, setLevelStatus] = useState({
+  const [levelStatus, setLevelStatus] = useState<TLevelStatus>({
     level: 0,
     status: LevelStatus.Enter,
   });

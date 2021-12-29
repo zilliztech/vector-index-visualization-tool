@@ -23,6 +23,11 @@ export enum LevelStatus {
   End,
 }
 
+export type TLevelStatus = {
+  level: number,
+  status: LevelStatus
+}
+
 export type TNodeProjection = [number, number];
 export type TCoord = [number, number];
 
