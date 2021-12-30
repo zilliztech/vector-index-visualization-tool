@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { TLevelStatus } from "Types";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Divider from "@mui/material/Divider";
 import { observer } from "mobx-react-lite";
 import { useGlobalStore } from "Store";
 import { get_image_url } from "Server";
+import { NodeType } from "Types";
 import {
   CustomCard,
   Title,
@@ -15,20 +15,26 @@ import {
   ImgGallery,
   ImgItem,
 } from "Components/CustomCard";
+import Typography from "@mui/material/Typography";
 
 const Explanation = observer(
   ({ replay = () => {} }: { replay?: () => void }) => {
     const store = useGlobalStore();
-    const {
-      targetId,
-      vectors_count,
-      searchParams,
-      buildParams,
-      visData,
-      searchStatus,
-    } = store;
+    const { targetId, vectors_count, visData, searchStatus } = store;
     const [status, setStatus] = useState(0);
     const changeStatus = () => setStatus(1 - status);
+
+    const galleries = visData.map((levelData) =>
+      levelData.nodes
+        .filter(
+          (node) =>
+            node.type === NodeType.Candidate || node.type === NodeType.Fine
+        )
+        .map((node) => node.id)
+    );
+    const fineIds =
+      visData.length > 0 ? visData[visData.length - 1].fine_ids : [];
+
     return (
       <CustomCard isRight>
         <CardContent>
@@ -50,6 +56,8 @@ const Explanation = observer(
               changeStatus={changeStatus}
               vectors_count={vectors_count}
               numLayers={visData.length}
+              galleries={galleries}
+              fineIds={fineIds}
             />
           )}
         </CardContent>
@@ -62,23 +70,44 @@ const DetailPaths = ({
   changeStatus,
   vectors_count,
   numLayers,
+  galleries,
+  fineIds,
 }: {
   changeStatus: () => void;
   vectors_count: number;
   numLayers: number;
+  galleries: string[][];
+  fineIds: string[];
 }) => {
   return (
     <>
       <Text>
         All Vectors: <Highlight>{vectors_count}</Highlight>
-      </Text>
-      <Text>
+        <br />
         Visited Vectors: <Highlight></Highlight>
-      </Text>
-      <Text>
+        <br />
         Num of Layers: <Highlight>{numLayers}</Highlight>
       </Text>
-      <Text>Return the introduction.</Text>
+      {galleries.map((gallery, level) => (
+        <React.Fragment key={level}>
+          <Typography
+            sx={{ fontSize: 14, mb: 1.5, mt: 1.5 }}
+            color="text.secondary"
+          >
+            Level {level}
+          </Typography>
+          <ImgGallery>
+            {gallery.map((id) => (
+              <ImgItem
+                key={id}
+                src={get_image_url(id)}
+                highlight={fineIds.indexOf(id) !== -1 && "#06AFF2"}
+              />
+            ))}
+          </ImgGallery>
+        </React.Fragment>
+      ))}
+      <Text>Back to the introduction.</Text>
       <CardActions sx={{ display: "flex", flexDirection: "row-reverse" }}>
         <CustomButton onClick={changeStatus}>Introduction</CustomButton>
       </CardActions>

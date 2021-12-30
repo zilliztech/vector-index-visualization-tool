@@ -1,5 +1,5 @@
 import React from "react";
-import { TLevelStatus } from "Types";
+import { TLevelStatus, NodeType } from "Types";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Divider from "@mui/material/Divider";
@@ -13,24 +13,30 @@ import {
   CustomButton,
   Highlight,
   ImgGallery,
-  ImgItem
+  ImgItem,
 } from "Components/CustomCard";
+import { colorScheme } from "Utils";
 
 const Explanation = ({
   levelStatus,
   isTargetLeft = true,
   changeLevel,
+  fineClusterOrder,
 }: {
   levelStatus: TLevelStatus;
   isTargetLeft?: boolean;
   changeLevel: () => void;
+  fineClusterOrder: number[];
 }) => {
   return (
     <CustomCard isRight={isTargetLeft}>
       {levelStatus.level === 0 ? (
         <CoarseLevelExplanation handleClick={changeLevel} />
       ) : (
-        <FineLevelExplanation handleClick={changeLevel} />
+        <FineLevelExplanation
+          handleClick={changeLevel}
+          fineClusterOrder={fineClusterOrder}
+        />
       )}
     </CustomCard>
   );
@@ -38,10 +44,27 @@ const Explanation = ({
 export default Explanation;
 
 const FineLevelExplanation = observer(
-  ({ handleClick }: { handleClick: () => void }) => {
+  ({
+    handleClick,
+    fineClusterOrder,
+  }: {
+    handleClick: () => void;
+    fineClusterOrder: number[];
+  }) => {
     const store = useGlobalStore();
-    const { targetId, vectors_count, searchParams, buildParams, visData, searchStatus } = store;
-    const fineIds = searchStatus !== 'ok' ? [] : visData[1].fine_ids; 
+    const { targetId, searchParams, visData, searchStatus } = store;
+    const fineIds = searchStatus !== "ok" ? [] : visData[1].fine_ids;
+    const fineNodes =
+      searchStatus !== "ok"
+        ? []
+        : visData[1].nodes.filter((node) => node.type === NodeType.Fine);
+    const fineId2clusterId = {} as {[key: string]: number};
+    fineNodes.forEach(node => {
+      fineId2clusterId[node.id || "0"] = node.cluster_id as number;
+    })
+    const fineIdColor = fineIds.map(
+      (id) => colorScheme[fineClusterOrder.indexOf(fineId2clusterId[id])]
+    );
     return (
       <CardContent>
         <Title>IVF Flat</Title>
@@ -64,8 +87,12 @@ const FineLevelExplanation = observer(
           (k = {searchParams["k"]}).
         </Text>
         <ImgGallery>
-          {fineIds.map(fineId => (
-            <ImgItem key={fineId} src={get_image_url(fineId)} />
+          {fineIds.map((fineId, i) => (
+            <ImgItem
+              key={fineId}
+              src={get_image_url(fineId)}
+              highlight={fineIdColor[i]}
+            />
           ))}
         </ImgGallery>
         <CardActions sx={{ display: "flex", flexDirection: "row-reverse" }}>

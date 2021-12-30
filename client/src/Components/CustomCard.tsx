@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginTop: 25,
     marginBottom: 30,
     display: "grid",
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    gridTemplateColumns: "repeat(3, 1fr)",
     gridColumnGap: 20,
     gridRowGap: 20,
   },
@@ -41,9 +41,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     objectFit: "cover",
     cursor: "pointer",
     borderRadius: 5,
-    '&:hover': {
-      boxShadow: '0 0 15px #06F3AF'
-    }
+    "&:hover": {
+      boxShadow: "0 0 15px #06F3AF",
+    },
   },
 }));
 
@@ -53,7 +53,7 @@ export const Highlight = (props: any) => (
     sx={{
       display: "inline-block",
       color: "#02BE88",
-      fontSize: 18,
+      fontSize: 16,
       fontWeight: 500,
       textDecoration: "underline",
     }}
@@ -64,7 +64,7 @@ export const Highlight = (props: any) => (
 
 export const Title = (props: any) => (
   <Typography
-    sx={{ fontSize: 20, fontWeight: 500 }}
+    sx={{ fontSize: 18, fontWeight: 500 }}
     color="text.primary"
     gutterBottom
   >
@@ -73,7 +73,7 @@ export const Title = (props: any) => (
 );
 
 export const Text = (props: any) => (
-  <Typography sx={{ fontSize: 16, mb: 1.5, mt: 1.5 }} color="text.secondary">
+  <Typography sx={{ fontSize: 14, mb: 1.5, mt: 1.5 }} color="text.secondary">
     {props.children}
   </Typography>
 );
@@ -81,7 +81,7 @@ export const Text = (props: any) => (
 export const CustomButton = (props: any) => (
   <Button
     variant="contained"
-    size="large"
+    size="medium"
     sx={{
       backgroundColor: "#02BE88",
       "&:hover": {
@@ -128,5 +128,14 @@ export const ImgGallery = (props: any) => {
 
 export const ImgItem = (props: any) => {
   const classes = useStyles();
-  return <img src={props.src} className={classes.imgItem} />;
+  const { src, highlight = "" } = props;
+  return (
+    <img
+      src={src}
+      className={classes.imgItem}
+      style={
+        highlight.length === 0 ? {} : { outline: `5px solid ${highlight}` }
+      }
+    />
+  );
 };

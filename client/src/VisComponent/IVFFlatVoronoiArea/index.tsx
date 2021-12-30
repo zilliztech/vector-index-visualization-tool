@@ -3,8 +3,6 @@ import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import { NodeType, LevelStatus, TCoord } from "Types";
 import { useClientRect, useLevelStatus } from "Hooks";
-import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
-import ZoomInMapIcon from "@mui/icons-material/ZoomInMap";
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
 import { useCoarseLevelNodes } from "./useCoarseLevelNodes";
 import { useFineLevelNodes } from "./useFineLevelNodes";
@@ -51,7 +49,7 @@ const IVFFlatVoronoiArea = observer(() => {
   const origin = [width * (isTargetLeft ? 0.35 : 0.65), height / 2] as TCoord;
   const maxR = Math.min(width, height) * 0.5 - 5;
 
-  addCentroidOrder({
+  const { fineClusterOrder } = addCentroidOrder({
     nodes: coarseLevelNodes.filter((node) => node.type === NodeType.Fine),
     width,
     height,
@@ -310,6 +308,7 @@ const IVFFlatVoronoiArea = observer(() => {
         changeLevel={changeLevel}
         levelStatus={levelStatus}
         isTargetLeft={isTargetLeft}
+        fineClusterOrder={fineClusterOrder}
       />
     </div>
   );
