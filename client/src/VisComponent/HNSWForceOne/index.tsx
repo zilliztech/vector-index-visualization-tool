@@ -119,6 +119,17 @@ const HNSWForceOne = observer(() => {
           .delay(linkShowTime[intraLevelLinkId])
           .attr("x2", t[0] + 0.01)
           .attr("y2", t[1]);
+        level > 0 &&
+          d3
+            .select(`#link-target-${level - 1}-${level}`)
+            .transition()
+            .duration(intraLevelGap)
+            .delay(linkShowTime[intraLevelLinkId])
+            .attr("x2", transform(targetCoord, level)[0] + 0.01)
+            .attr("y2", transform(targetCoord, level)[1])
+            .on("end", () => {
+              d3.select(`#target-${level}`).attr("opacity", 1);
+            });
       });
     }
   }, [layoutFinished]);
@@ -331,12 +342,13 @@ const HNSWForceOne = observer(() => {
                   <g id="target-g">
                     {level > 0 && (
                       <line
+                        id={`link-target-${level - 1}-${level}`}
                         fill="none"
                         stroke="#ccc"
                         strokeWidth="2"
                         opacity="0.5"
-                        x1={transform(targetCoord, level)[0]}
-                        y1={transform(targetCoord, level)[1]}
+                        x1={transform(targetCoord, level - 1)[0]}
+                        y1={transform(targetCoord, level - 1)[1]}
                         x2={transform(targetCoord, level - 1)[0]}
                         y2={transform(targetCoord, level - 1)[1]}
                         strokeDasharray={5}
@@ -344,11 +356,13 @@ const HNSWForceOne = observer(() => {
                     )}
                     {
                       <ellipse
+                        id={`target-${level}`}
                         cx={transform(targetCoord, level)[0]}
                         cy={transform(targetCoord, level)[1]}
                         fill="url(#target-gradient)"
                         rx={5}
                         ry={4}
+                        opacity={level === 0 ? 1 : 0}
                       />
                     }
                   </g>
