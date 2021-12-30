@@ -32,8 +32,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginBottom: 30,
     display: "grid",
     gridTemplateColumns: "repeat(3, 1fr)",
-    gridColumnGap: 20,
-    gridRowGap: 20,
+    gridColumnGap: 22,
+    gridRowGap: 22,
   },
   imgItem: {
     width: "100%",
@@ -41,8 +41,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     objectFit: "cover",
     cursor: "pointer",
     borderRadius: 5,
+    opacity: 0.9,
     "&:hover": {
-      boxShadow: "0 0 15px #06F3AF",
+      boxShadow: "0 0 20px #06F3AF",
+      opacity: 1,
     },
   },
 }));
