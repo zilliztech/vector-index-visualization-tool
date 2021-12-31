@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
-import { NodeType, LevelStatus, TCoord } from "Types";
+import { NodeType, LevelStatus, TCoord, THoverStatus } from "Types";
 import { useClientRect, useLevelStatus } from "Hooks";
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
 import { useCoarseLevelNodes } from "./useCoarseLevelNodes";
@@ -9,6 +9,7 @@ import { useFineLevelNodes } from "./useFineLevelNodes";
 import { useTargetNode } from "./useTargetNode";
 import { addCentroidOrder } from "./addCentroidOrder";
 import Explanation from "./Explanation";
+import IVFToolTip from "./IVFToolTip";
 
 import * as d3 from "d3";
 
@@ -18,6 +19,20 @@ const useStyles = makeStyles((theme: Theme) =>
       position: "relative",
       width: "100%",
       height: "100%",
+    },
+    fineArea: {
+      // cursor: "pointer",
+      "&:hover": {
+        // boxShadow: "0 0 50px #888",
+        // stroke: '#111',
+        fill: "#FFC671",
+      },
+    },
+    fineNode: {
+      "&:hover": {
+        // fill: "#FFC671",
+        r:10,
+      },
     },
   })
 );
@@ -37,7 +52,7 @@ const IVFFlatVoronoiArea = observer(() => {
     height,
   });
 
-  const targetNodeBias = 30;
+  const targetNodeBias = width * 0.018;
   const { targetNode_CoarseLevelProjection, isTargetLeft } = useTargetNode({
     checked: coarsLevelForceFinished,
     visData,
@@ -99,6 +114,24 @@ const IVFFlatVoronoiArea = observer(() => {
     }
   };
 
+  const [hoverStatus, setHoverStatus] = useState<THoverStatus>({
+    status: false,
+    node: null,
+  });
+
+  const initHoverStatus = () =>
+    setHoverStatus({
+      status: false,
+      node: null,
+    });
+
+  const exploreDetails = (node: any) => {
+    setHoverStatus({
+      status: true,
+      node,
+    });
+  };
+
   return (
     <div className={classes.root}>
       <svg
@@ -141,18 +174,21 @@ const IVFFlatVoronoiArea = observer(() => {
                     strokeWidth={"3"}
                     // opacity={1}
                     opacity={levelStatus.status === LevelStatus.Enter ? 1 : 0.9}
+                    className={classes.fineArea}
                     transform={
                       levelStatus.status === LevelStatus.Enter
                         ? ""
                         : `translate(${node.translate[0]}, ${node.translate[1]})`
                     }
                     style={{
-                      transition: `all ${
+                      transition: `transform ${
                         levelStatus.status === LevelStatus.Enter
                           ? enterTime
                           : exitTime
                       }s ease`,
                     }}
+                    onMouseEnter={() => exploreDetails(node)}
+                    onMouseLeave={initHoverStatus}
                   />
                   {/* <text key={`id-${node.id}`} x={node.x-30} y={node.y}>
                     {node.id}
@@ -265,12 +301,17 @@ const IVFFlatVoronoiArea = observer(() => {
                 stroke={"#fff"}
                 fill={node.color}
                 style={{
-                  transition: `all ${
+                  transitionProperty: "cx, cy",
+                  transitionTimingFunction: "ease",
+                  transitionDuration: `${
                     levelStatus.status === LevelStatus.Enter
                       ? enterTime
                       : exitTime
-                  }s ease`,
+                  }s`,
                 }}
+                className={classes.fineNode}
+                onMouseEnter={() => exploreDetails(node)}
+                onMouseLeave={initHoverStatus}
               />
             ))}
             <g id="target">
@@ -310,6 +351,14 @@ const IVFFlatVoronoiArea = observer(() => {
           levelStatus={levelStatus}
           isTargetLeft={isTargetLeft}
           fineClusterOrder={fineClusterOrder}
+        />
+      )}
+      {hoverStatus.status && (
+        <IVFToolTip
+          width={width}
+          height={height}
+          levelStatus={levelStatus}
+          node={hoverStatus.node}
         />
       )}
     </div>

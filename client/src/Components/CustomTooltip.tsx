@@ -8,44 +8,36 @@ import Typography from "@mui/material/Typography";
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     position: "absolute",
-    top: "5%",
-    bottom: "5%",
-    width: 400,
-    maxWidth: "26%",
-    // background: '#fff',
-    // opacity: 0.5,
-    // padding: 10,
+    width: 300,
+    maxWidth: "20%",
+    pointerEvents: "none",
   },
-  rootLeft: {
-    left: "6%",
-  },
-  rootRight: {
-    right: "4%",
-  },
-  // gallery: {
-  //   display: "flex",
-  //   flexWrap: "wrap",
-  //   justifyContent: "space-between",
-  // },
   gallery: {
-    marginTop: 25,
-    marginBottom: 30,
+    marginTop: 12,
+    // marginBottom: 30,
     display: "grid",
     gridTemplateColumns: "repeat(3, 1fr)",
-    gridColumnGap: 20,
-    gridRowGap: 16,
+    gridColumnGap: 12,
+    gridRowGap: 10,
   },
   imgItem: {
     width: "100%",
-    height: 80,
+    height: 60,
     objectFit: "cover",
     cursor: "pointer",
-    borderRadius: 5,
+    borderRadius: 3,
     opacity: 0.9,
     "&:hover": {
       boxShadow: "0 0 20px #06F3AF",
       opacity: 1,
     },
+  },
+  singleImg: {
+    maxWidth: "100%",
+    height: 200,
+    objectFit: "cover",
+    borderRadius: 5,
+    marginTop: 12,
   },
 }));
 
@@ -58,24 +50,25 @@ export const Highlight = (props: any) => (
       fontSize: 16,
       fontWeight: 500,
       textDecoration: "underline",
+      ml: 1,
     }}
   >
     {props.children}
   </Box>
 );
 
-export const Title = (props: any) => (
-  <Typography
-    sx={{ fontSize: 18, fontWeight: 500 }}
-    color="text.primary"
-    gutterBottom
-  >
+export const Text = (props: any) => (
+  <Typography sx={{ fontSize: 14, mb: 0.5, mt: 0.5 }} color="text.secondary">
     {props.children}
   </Typography>
 );
 
-export const Text = (props: any) => (
-  <Typography sx={{ fontSize: 14, mb: 1.5, mt: 1.5 }} color="text.secondary">
+export const Title = (props: any) => (
+  <Typography
+    sx={{ fontSize: 16, fontWeight: 500 }}
+    color="text.primary"
+    // gutterBottom
+  >
     {props.children}
   </Typography>
 );
@@ -97,22 +90,30 @@ export const CustomButton = (props: any) => (
   </Button>
 );
 
-export const CustomCard = (props: any) => {
+export const CustomTooltip = (props: any) => {
   const classes = useStyles();
-  const rootClass = `${classes.root} ${
-    props.isRight ? classes.rootRight : classes.rootLeft
-  }`;
-
+  const {x,y,width,height, bias=20} = props;
+  const posStyle = {} as any;
+  if (x > width * 0.8) {
+    posStyle["right"] = width - x - bias * 0.5;
+  } else {
+    posStyle["left"] = x + bias;
+  }
+  if (y > height * 0.7) {
+    posStyle["bottom"] = height - y - bias * 0.5;
+  } else {
+    posStyle["top"] = y + bias;
+  }
   return (
-    <div className={rootClass}>
+    <div className={classes.root} style={posStyle}>
       <Card
         sx={{
           opacity: 1,
-          pt: 1,
-          pl: 2,
-          pr: 2,
+          pt: 0,
+          pl: 0.5,
+          pr: 0.5,
           background: "rgba(240,240,240,0.9)",
-          maxHeight: "100%",
+          maxHeight: "30%",
           minHeight: "20%",
           overflow: "auto",
         }}
@@ -136,3 +137,10 @@ export const ImgItem = (props: any) => {
     highlight.length === 0 ? {} : { borderRight: color, borderBottom: color };
   return <img src={src} className={classes.imgItem} style={style} />;
 };
+
+export const SingleImg = (props: any) => {
+  const classes = useStyles();
+  const { src } = props;
+  return <img src={src} className={classes.singleImg}/>;
+};
+
