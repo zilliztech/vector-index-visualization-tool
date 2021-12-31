@@ -26,7 +26,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   fineNode: {
     "&:hover": {
       // fill: "#FFC671",
-      r: 10,
+      rx: 10,
+      ry: 7,
     },
   },
 }));
@@ -356,6 +357,7 @@ const HNSWForceOne = observer(() => {
                                 ? 6
                                 : 1
                             }
+                            style={{ pointerEvents: "none" }}
                             x1={transform(nodeCoordMap[link.source], level)[0]}
                             y1={transform(nodeCoordMap[link.source], level)[1]}
                             x2={transform(nodeCoordMap[link.source], level)[0]}
