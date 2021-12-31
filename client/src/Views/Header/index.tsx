@@ -87,9 +87,9 @@ const Header = () => {
         <div className={classes.controlItem} onClick={handleIndexParamsOpen}>
           Setting
         </div>
-        <div className={classes.controlItem} onClick={handleAboutOpen}>
+        {/* <div className={classes.controlItem} onClick={handleAboutOpen}>
           About
-        </div>
+        </div> */}
       </div>
       <SearchDialog open={searchOpen} handleClose={handleSearchClose} />
       <IndexTypeDialog

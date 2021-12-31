@@ -3,7 +3,7 @@ import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import { NodeType, LevelStatus, TCoord, THoverStatus } from "Types";
 import { useClientRect, useLevelStatus } from "Hooks";
-import { createStyles, makeStyles, Theme } from "@material-ui/core";
+import { makeStyles, Theme } from "@material-ui/core";
 import { useCoarseLevelNodes } from "./useCoarseLevelNodes";
 import { useFineLevelNodes } from "./useFineLevelNodes";
 import { useTargetNode } from "./useTargetNode";
@@ -13,29 +13,27 @@ import IVFToolTip from "./IVFToolTip";
 
 import * as d3 from "d3";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      position: "relative",
-      width: "100%",
-      height: "100%",
+const useStyles = makeStyles((theme: Theme) => ({
+  root: {
+    position: "relative",
+    width: "100%",
+    height: "100%",
+  },
+  fineArea: {
+    // cursor: "pointer",
+    "&:hover": {
+      // boxShadow: "0 0 50px #888",
+      // stroke: '#111',
+      fill: "#FFC671",
     },
-    fineArea: {
-      // cursor: "pointer",
-      "&:hover": {
-        // boxShadow: "0 0 50px #888",
-        // stroke: '#111',
-        fill: "#FFC671",
-      },
+  },
+  fineNode: {
+    "&:hover": {
+      // fill: "#FFC671",
+      r: 10,
     },
-    fineNode: {
-      "&:hover": {
-        // fill: "#FFC671",
-        r:10,
-      },
-    },
-  })
-);
+  },
+}));
 
 const IVFFlatVoronoiArea = observer(() => {
   const store = useGlobalStore();

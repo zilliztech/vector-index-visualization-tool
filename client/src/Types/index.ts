@@ -31,7 +31,8 @@ export type TLevelStatus = {
 export type THoverStatus = {
   status: boolean;
   node: any;
-}
+  level?: number;
+};
 
 export type TNodeProjection = [number, number];
 export type TCoord = [number, number];
@@ -174,5 +175,3 @@ export enum ELayoutType {
   Force = 0,
   ForceDist,
 }
-
-

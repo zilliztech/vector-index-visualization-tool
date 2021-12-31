@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import { useClientRect } from "Hooks";
-import { INode, ILink, NodeType, LinkType } from "Types";
+import { INode, ILink, NodeType, LinkType, THoverStatus } from "Types";
 import { useTransform } from "./useTransform";
 import { useNodeCoordMap } from "./useNodeCoordMap";
 import { useTransitionTime, ETransType } from "./useTransitionTime";
 import * as d3 from "d3";
 import Explanation from "./Explanation";
+import HNSWToolTip from "./HNSWToolTip";
+import { makeStyles, Theme } from "@material-ui/core";
 
 const angleXYs = [
   [0, 1, 0, 0],
@@ -20,8 +22,18 @@ const angleXYs = [
   [1, 1, 0, 0],
 ];
 
+const useStyles = makeStyles((theme: Theme) => ({
+  fineNode: {
+    "&:hover": {
+      // fill: "#FFC671",
+      r: 10,
+    },
+  },
+}));
+
 const HNSWForceOne = observer(() => {
   const store = useGlobalStore();
+  const classes = useStyles();
   const { visData, searchStatus } = store;
   const svgId = "hnsw_all_in_one_svg";
   const { width, height } = useClientRect({ svgId });
@@ -62,6 +74,8 @@ const HNSWForceOne = observer(() => {
     forceWidth / 2,
     forceHeight / 2,
   ];
+
+  const [replay, setReplay] = useState(false);
 
   useEffect(() => {
     if (layoutFinished) {
@@ -180,6 +194,42 @@ const HNSWForceOne = observer(() => {
     }
     return "#fff";
   };
+
+  const [hoverStatus, setHoverStatus] = useState<THoverStatus>({
+    status: false,
+    node: null,
+    level: 0,
+  });
+
+  const initHoverStatus = () =>
+    setHoverStatus({
+      status: false,
+      node: null,
+      level: 0,
+    });
+
+  const exploreDetails = (node: any, level: number) => {
+    setHoverStatus({
+      status: true,
+      node,
+      level,
+    });
+  };
+
+  const hoverData = hoverStatus.status
+    ? {
+        node: hoverStatus.node,
+        level: hoverStatus.level,
+        x: transform(
+          nodeCoordMap[hoverStatus.node.id],
+          hoverStatus.level || 0
+        )[0],
+        y: transform(
+          nodeCoordMap[hoverStatus.node.id],
+          hoverStatus.level || 0
+        )[1],
+      }
+    : {};
 
   return (
     <>
@@ -320,11 +370,14 @@ const HNSWForceOne = observer(() => {
                         key={node.id}
                         id={`node-${level}-${node.id}`}
                         opacity={0}
+                        className={classes.fineNode}
                         cx={transform(nodeCoordMap[node.id], level)[0]}
                         cy={transform(nodeCoordMap[node.id], level)[1]}
                         fill={getNodeFill(node, level)}
                         rx={getNodeR(node, level) + 1}
                         ry={getNodeR(node, level)}
+                        onMouseEnter={() => exploreDetails(node, level)}
+                        onMouseLeave={initHoverStatus}
                       />
                     ))}
                   </g>
@@ -372,7 +425,10 @@ const HNSWForceOne = observer(() => {
           );
         })}
       </svg>
-      {searchStatus === 'ok' &&  <Explanation />}
+      {searchStatus === "ok" && <Explanation />}
+      {hoverStatus.status && (
+        <HNSWToolTip width={width} height={height} data={hoverData} />
+      )}
     </>
   );
 });

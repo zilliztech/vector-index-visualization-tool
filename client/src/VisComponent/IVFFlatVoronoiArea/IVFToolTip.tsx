@@ -1,9 +1,7 @@
 import React from "react";
 import { TLevelStatus } from "Types";
-import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { makeStyles, Theme } from "@material-ui/core";
-import Typography from "@mui/material/Typography";
 import { generateRandomSamples } from "Utils";
 import { get_image_url } from "Server";
 import {
@@ -16,8 +14,6 @@ import {
   CustomTooltip,
 } from "Components/CustomTooltip";
 
-const useStyles = makeStyles((theme: Theme) => ({}));
-
 const IVFToolTip = ({
   levelStatus,
   node,
@@ -29,7 +25,6 @@ const IVFToolTip = ({
   width: number;
   height: number;
 }) => {
-  const classes = useStyles();
   const { x, y } = node;
 
   return (

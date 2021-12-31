@@ -97,7 +97,7 @@ const FineLevelExplanation = observer(
         </ImgGallery>
         <CardActions sx={{ display: "flex", flexDirection: "row-reverse" }}>
           <CustomButton onClick={handleClick}>Previous</CustomButton>
-          <CustomButton onClick={handleClick}>Project</CustomButton>
+          {/* <CustomButton onClick={handleClick}>Project</CustomButton> */}
         </CardActions>
       </CardContent>
     );

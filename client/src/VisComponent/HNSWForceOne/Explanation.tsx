@@ -145,7 +145,7 @@ const Introduction = ({
     <Text>Replay the animation or explore the detailed search path.</Text>
     <CardActions sx={{ display: "flex", flexDirection: "row-reverse" }}>
       <CustomButton onClick={changeStatus}>Details</CustomButton>
-      <CustomButton onClick={replay}>RePlay</CustomButton>
+      {/* <CustomButton onClick={replay}>RePlay</CustomButton> */}
     </CardActions>
   </>
 );
