@@ -1,7 +1,6 @@
 import React from "react";
 import { TLevelStatus } from "Types";
 import CardContent from "@mui/material/CardContent";
-import { makeStyles, Theme } from "@material-ui/core";
 import { generateRandomSamples } from "Utils";
 import { get_image_url } from "Server";
 import {
