@@ -61,14 +61,15 @@ $ yarn start
 
 ## IVFFlat Visualization
 
-todo snapshots
+![image](./fig/IVF-Coarse)
+![image](./fig/IVF-Fine)
 
 The visiting records of vectors in IVFFlat comes from the python api of [faiss](https://github.com/facebookresearch/faiss).
 (details on *server/index/faiss_ivf.py*)
 
 ## HNSW Visualization
 
-todo snapshots
+![image](./fig/HNSW)
 
 Getting the visiting records of vectors in HNSW comes by modifying the source cpp of [hnswlib](https://github.com/nmslib/hnswlib),
 then compiling to python.
