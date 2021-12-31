@@ -5,6 +5,7 @@ import VisComponent from "VisComponent";
 
 const MainView = observer(() => {
   // const store = useGlobalStore();
+  // const { searchStatus } = store;
   return <VisComponent />;
 });
 

@@ -1,5 +1,4 @@
-import React  // , { useState }
-from "react";
+import React from "react"; // , { useState }
 import {
   makeStyles,
   Theme,
@@ -7,10 +6,13 @@ import {
   // Drawer
 } from "@material-ui/core";
 // import MenuIcon from "@mui/icons-material/Menu";
-import { StoreProvider } from "Store";
+import { StoreProvider, useGlobalStore } from "Store";
 import MainView from "Views/MainView";
 // import ControlView from "Views/ControlView";
 import Header from "Views/Header";
+import { observer } from "mobx-react-lite";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const headerHeight = 30;
 const useStyles = makeStyles((theme: Theme) => ({
@@ -56,22 +58,35 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 function App() {
-  const classes = useStyles();
-  // const [drawerOpen, setDrawerOpen] = useState(true);
-  // const handleDrawerOpen = () => setDrawerOpen(!drawerOpen);
   return (
     <StoreProvider>
-      <div className={classes.root}>
-        <div className={classes.header}>
-          <Header />
-        </div>
-        <div className={classes.mainView}>
-          <MainView />
-        </div>
-        {/* <div className={classes.controlView}>
+      <Views />
+    </StoreProvider>
+  );
+}
+
+const Views = observer(() => {
+  const classes = useStyles();
+  const store = useGlobalStore();
+  const { searchStatus } = store;
+  return (
+    <div className={classes.root}>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={searchStatus !== "ok"}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <div className={classes.header}>
+        <Header />
+      </div>
+      <div className={classes.mainView}>
+        <MainView />
+      </div>
+      {/* <div className={classes.controlView}>
           <ControlView />
         </div> */}
-        {/* <Drawer
+      {/* <Drawer
           className={classes.controlDrawer}
           anchor="right"
           open={drawerOpen}
@@ -88,9 +103,8 @@ function App() {
         >
           <MenuIcon />
         </IconButton> */}
-      </div>
-    </StoreProvider>
+    </div>
   );
-}
+});
 
 export default App;

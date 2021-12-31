@@ -32,8 +32,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginBottom: 30,
     display: "grid",
     gridTemplateColumns: "repeat(3, 1fr)",
-    gridColumnGap: 22,
-    gridRowGap: 22,
+    gridColumnGap: 20,
+    gridRowGap: 16,
   },
   imgItem: {
     width: "100%",
@@ -131,13 +131,8 @@ export const ImgGallery = (props: any) => {
 export const ImgItem = (props: any) => {
   const classes = useStyles();
   const { src, highlight = "" } = props;
-  return (
-    <img
-      src={src}
-      className={classes.imgItem}
-      style={
-        highlight.length === 0 ? {} : { outline: `5px solid ${highlight}` }
-      }
-    />
-  );
+  const color = `5px solid ${highlight}`;
+  const style =
+    highlight.length === 0 ? {} : { borderRight: color, borderBottom: color };
+  return <img src={src} className={classes.imgItem} style={style} />;
 };

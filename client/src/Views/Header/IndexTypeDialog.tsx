@@ -24,6 +24,11 @@ const IndexTypeDialog = observer(
     } = store;
     // const handleClickClose = () => searchById();
 
+    const handleSelectIndexType = (type: string) => {
+      handleClose();
+      setIndexType(type);
+    }
+
     return (
       <Dialog
         open={open}
@@ -37,7 +42,7 @@ const IndexTypeDialog = observer(
           <List>
             {indexTypeList.map((type) => (
               <ListItem>
-                <ListItemButton onClick={() => setIndexType(type)}>
+                <ListItemButton onClick={() => handleSelectIndexType(type)}>
                   {type === indexType ? (
                     <>
                       <ListItemIcon>

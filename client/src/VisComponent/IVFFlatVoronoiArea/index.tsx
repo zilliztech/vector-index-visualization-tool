@@ -304,12 +304,14 @@ const IVFFlatVoronoiArea = observer(() => {
           )}
         </g> */}
       </svg>
-      <Explanation
-        changeLevel={changeLevel}
-        levelStatus={levelStatus}
-        isTargetLeft={isTargetLeft}
-        fineClusterOrder={fineClusterOrder}
-      />
+      {searchStatus === "ok" && coarsLevelForceFinished && (
+        <Explanation
+          changeLevel={changeLevel}
+          levelStatus={levelStatus}
+          isTargetLeft={isTargetLeft}
+          fineClusterOrder={fineClusterOrder}
+        />
+      )}
     </div>
   );
 });

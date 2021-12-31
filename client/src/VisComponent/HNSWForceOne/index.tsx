@@ -372,7 +372,7 @@ const HNSWForceOne = observer(() => {
           );
         })}
       </svg>
-      <Explanation />
+      {searchStatus === 'ok' &&  <Explanation />}
     </>
   );
 });
