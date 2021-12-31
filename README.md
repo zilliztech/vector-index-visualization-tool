@@ -35,11 +35,15 @@ $ conda install -c pytorch faiss-gpu
 $ conda install -c pytorch faiss-gpu cudatoolkit=10.2 # for CUDA 10.2 
 ```
 - hnswlib4vis
-  - Download and install wheel directly.
+  - [Download](https://drive.google.com/file/d/1rApQlIEJwrU6oVAVKqHEYDBX4jdC3YQ0/view?usp=sharing) and install wheel directly.
   - compile C++ to py (todo link).
 
 - Dataset (images and embedding vectors)
-  - sample download
+  - [images from VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar)
+    - put image_files("VOCdevkit/VOC2012/JPEGImages") to "./server/data/images/"
+  - [vectors embedding by ResNet](https://drive.google.com/file/d/1bWLTsN3uiYRKntkf5pOZby6Ygp_zMWxp/view?usp=sharing)
+    - put vector.csv to "./server/data/"
+  - you can also use your own data including images and embedding vectors.
 
 
 ### Build and Run
