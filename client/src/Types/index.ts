@@ -23,6 +23,11 @@ export enum LevelStatus {
   End,
 }
 
+export enum EIVFFineLevelLayout {
+  Polar = 0,
+  Project = 1,
+}
+
 export type TLevelStatus = {
   level: number;
   status: LevelStatus;
@@ -84,6 +89,10 @@ export interface IIVFVoronoiAreaFineNode extends INode {
 
   centroidX: number;
   centroidY: number;
+
+  projection: TCoord;
+  projectX: number;
+  projectY: number;
 }
 
 export interface IIVFVoronoiAreaNode extends INode {

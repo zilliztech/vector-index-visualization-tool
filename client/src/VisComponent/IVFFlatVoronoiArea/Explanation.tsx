@@ -22,11 +22,13 @@ const Explanation = ({
   isTargetLeft = true,
   changeLevel,
   fineClusterOrder,
+  handleChangeLayout,
 }: {
   levelStatus: TLevelStatus;
   isTargetLeft?: boolean;
   changeLevel: () => void;
   fineClusterOrder: number[];
+  handleChangeLayout: () => void;
 }) => {
   return (
     <CustomCard isRight={isTargetLeft}>
@@ -36,6 +38,7 @@ const Explanation = ({
         <FineLevelExplanation
           handleClick={changeLevel}
           fineClusterOrder={fineClusterOrder}
+          handleChangeLayout={handleChangeLayout}
         />
       )}
     </CustomCard>
@@ -47,9 +50,11 @@ const FineLevelExplanation = observer(
   ({
     handleClick,
     fineClusterOrder,
+    handleChangeLayout,
   }: {
     handleClick: () => void;
     fineClusterOrder: number[];
+    handleChangeLayout: () => void;
   }) => {
     const store = useGlobalStore();
     const { targetId, searchParams, visData, searchStatus } = store;
@@ -58,10 +63,10 @@ const FineLevelExplanation = observer(
       searchStatus !== "ok"
         ? []
         : visData[1].nodes.filter((node) => node.type === NodeType.Fine);
-    const fineId2clusterId = {} as {[key: string]: number};
-    fineNodes.forEach(node => {
+    const fineId2clusterId = {} as { [key: string]: number };
+    fineNodes.forEach((node) => {
       fineId2clusterId[node.id || "0"] = node.cluster_id as number;
-    })
+    });
     const fineIdColor = fineIds.map(
       (id) => colorScheme[fineClusterOrder.indexOf(fineId2clusterId[id])]
     );
@@ -97,7 +102,7 @@ const FineLevelExplanation = observer(
         </ImgGallery>
         <CardActions sx={{ display: "flex", flexDirection: "row-reverse" }}>
           <CustomButton onClick={handleClick}>Previous</CustomButton>
-          {/* <CustomButton onClick={handleClick}>Project</CustomButton> */}
+          <CustomButton onClick={handleChangeLayout}>Project</CustomButton>
         </CardActions>
       </CardContent>
     );
@@ -126,7 +131,7 @@ const CoarseLevelExplanation = observer(
           In Coarse-search, firstly divide the whole vector space (including{" "}
           <Highlight>{vectors_count}</Highlight> vectors) into{" "}
           <Highlight>{buildParams["nlist"]}</Highlight> clusters (nlist ={" "}
-          {buildParams["nlist"]}) according to distance similarity by KNN.
+          {buildParams["nlist"]}) according to distance similarity by k-means.
         </Text>
         {/* <Text
         >

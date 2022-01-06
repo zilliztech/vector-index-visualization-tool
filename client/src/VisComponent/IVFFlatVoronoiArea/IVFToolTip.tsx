@@ -1,5 +1,5 @@
 import React from "react";
-import { TLevelStatus } from "Types";
+import { TLevelStatus,EIVFFineLevelLayout } from "Types";
 import CardContent from "@mui/material/CardContent";
 import { generateRandomSamples } from "Utils";
 import { get_image_url } from "Server";
@@ -18,13 +18,16 @@ const IVFToolTip = ({
   node,
   width,
   height,
+  fineLevelLayout = EIVFFineLevelLayout.Polar,
 }: {
   levelStatus: TLevelStatus;
   node: any;
   width: number;
   height: number;
+  fineLevelLayout?: EIVFFineLevelLayout;
 }) => {
-  const { x, y } = node;
+  const x = (levelStatus.level === 1 && fineLevelLayout !== EIVFFineLevelLayout.Polar) ? node.projectX : node.x;
+  const y = (levelStatus.level === 1 && fineLevelLayout !== EIVFFineLevelLayout.Polar) ? node.projectY : node.y;
 
   return (
     <CustomTooltip {...{ x, y, width, height }}>

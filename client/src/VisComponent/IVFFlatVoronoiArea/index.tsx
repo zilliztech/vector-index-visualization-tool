@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
-import { NodeType, LevelStatus, TCoord, THoverStatus } from "Types";
+import {
+  NodeType,
+  LevelStatus,
+  TCoord,
+  THoverStatus,
+  EIVFFineLevelLayout,
+  IIVFVoronoiAreaFineNode,
+} from "Types";
 import { useClientRect, useLevelStatus } from "Hooks";
 import { makeStyles, Theme } from "@material-ui/core";
 import { useCoarseLevelNodes } from "./useCoarseLevelNodes";
@@ -10,6 +17,7 @@ import { useTargetNode } from "./useTargetNode";
 import { addCentroidOrder } from "./addCentroidOrder";
 import Explanation from "./Explanation";
 import IVFToolTip from "./IVFToolTip";
+import { CustomButton } from "Components/CustomCard";
 
 import * as d3 from "d3";
 
@@ -33,13 +41,18 @@ const useStyles = makeStyles((theme: Theme) => ({
       r: 10,
     },
   },
+  projectReturn: {
+    position: "absolute",
+    right: '2%',
+    bottom: '3%',
+  },
 }));
 
 const IVFFlatVoronoiArea = observer(() => {
   const store = useGlobalStore();
   const classes = useStyles();
   const svgId = "ivf_flat_voronoi_area_svg";
-  const { visData, searchStatus } = store;
+  const { visData, searchStatus, searchParams } = store;
 
   const { width, height } = useClientRect({ svgId });
 
@@ -128,6 +141,56 @@ const IVFFlatVoronoiArea = observer(() => {
       status: true,
       node,
     });
+  };
+
+  const [fineLevelLayout, setFineLevelLayout] = useState(
+    EIVFFineLevelLayout.Polar
+  );
+  const changeFineLevelLayout = () => {
+    if (fineLevelLayout === EIVFFineLevelLayout.Polar) {
+      setFineLevelLayout(EIVFFineLevelLayout.Project);
+    } else {
+      setFineLevelLayout(EIVFFineLevelLayout.Polar);
+    }
+  };
+
+  const getFineNodePosX = (node: IIVFVoronoiAreaFineNode) => {
+    if (fineLevelLayout === EIVFFineLevelLayout.Polar) {
+      return node.x;
+    } else {
+      return node.projectX;
+    }
+  };
+
+  const getFineNodePosY = (node: IIVFVoronoiAreaFineNode) => {
+    if (fineLevelLayout === EIVFFineLevelLayout.Polar) {
+      return node.y;
+    } else {
+      return node.projectY;
+    }
+  };
+
+  const targetPosX_FineLevel_Project =
+    fineLevelNodes
+      .filter((node) => node.type === NodeType.Fine)
+      .reduce((s, a) => s + a.projectX, 0) / (searchParams["k"] as number);
+  const getTargetPosX_FineLevel = () => {
+    if (fineLevelLayout === EIVFFineLevelLayout.Polar) {
+      return origin[0];
+    } else {
+      return targetPosX_FineLevel_Project;
+    }
+  };
+  const targetPosY_FineLevel_Project =
+    fineLevelNodes
+      .filter((node) => node.type === NodeType.Fine)
+      .reduce((s, a) => s + a.projectY, 0) / (searchParams["k"] as number);
+  const getTargetPosY_FineLevel = () => {
+    if (fineLevelLayout === EIVFFineLevelLayout.Polar) {
+      return origin[1];
+    } else {
+      return targetPosY_FineLevel_Project;
+    }
   };
 
   return (
@@ -227,25 +290,26 @@ const IVFFlatVoronoiArea = observer(() => {
         {levelStatus.level === 1 && (
           <g id="fine-level">
             <g id="polar-sticks">
-              {polarSticks.map((stick) => (
-                <circle
-                  key={`stick-${stick}`}
-                  cx={origin[0]}
-                  cy={origin[1]}
-                  r={stick}
-                  fill="none"
-                  stroke="#06F3AF"
-                  strokeWidth="0.3"
-                  opacity={levelStatus.status === LevelStatus.Enter ? 0.7 : 0}
-                  style={{
-                    transition: `all ${
-                      levelStatus.status === LevelStatus.Enter
-                        ? enterTime
-                        : exitTime
-                    }s ease`,
-                  }}
-                />
-              ))}
+              {fineLevelLayout === EIVFFineLevelLayout.Polar &&
+                polarSticks.map((stick) => (
+                  <circle
+                    key={`stick-${stick}`}
+                    cx={origin[0]}
+                    cy={origin[1]}
+                    r={stick}
+                    fill="none"
+                    stroke="#06F3AF"
+                    strokeWidth="0.3"
+                    opacity={levelStatus.status === LevelStatus.Enter ? 0.7 : 0}
+                    style={{
+                      transition: `all ${
+                        levelStatus.status === LevelStatus.Enter
+                          ? enterTime
+                          : exitTime
+                      }s ease`,
+                    }}
+                  />
+                ))}
             </g>
             <g id="fine-centroid-cluster">
               {coarseLevelNodes
@@ -284,12 +348,12 @@ const IVFFlatVoronoiArea = observer(() => {
                 key={node.id}
                 cx={
                   levelStatus.status === LevelStatus.Enter
-                    ? node.x
+                    ? getFineNodePosX(node)
                     : node.centroidX
                 }
                 cy={
                   levelStatus.status === LevelStatus.Enter
-                    ? node.y
+                    ? getFineNodePosY(node)
                     : node.centroidY
                 }
                 // opacity={levelStatus.status === LevelStatus.Enter ? 1 : 0.3}
@@ -315,12 +379,19 @@ const IVFFlatVoronoiArea = observer(() => {
             <g id="target">
               {targetNode_CoarseLevelProjection.x > 0 && (
                 <circle
-                  cx={origin[0]}
-                  cy={origin[1]}
+                  cx={getTargetPosX_FineLevel()}
+                  cy={getTargetPosY_FineLevel()}
                   fill="none"
                   r="11"
                   stroke="#fff"
                   strokeWidth="7"
+                  style={{
+                    transition: `all ${
+                      levelStatus.status === LevelStatus.Enter
+                        ? enterTime
+                        : exitTime
+                    }s ease`,
+                  }}
                 />
               )}
             </g>
@@ -343,22 +414,33 @@ const IVFFlatVoronoiArea = observer(() => {
           )}
         </g> */}
       </svg>
-      {searchStatus === "ok" && coarsLevelForceFinished && (
-        <Explanation
-          changeLevel={changeLevel}
-          levelStatus={levelStatus}
-          isTargetLeft={isTargetLeft}
-          fineClusterOrder={fineClusterOrder}
-        />
-      )}
+      {searchStatus === "ok" &&
+        coarsLevelForceFinished &&
+        (levelStatus.level === 0 ||
+          fineLevelLayout === EIVFFineLevelLayout.Polar) && (
+          <Explanation
+            changeLevel={changeLevel}
+            levelStatus={levelStatus}
+            isTargetLeft={isTargetLeft}
+            fineClusterOrder={fineClusterOrder}
+            handleChangeLayout={changeFineLevelLayout}
+          />
+        )}
       {hoverStatus.status && (
         <IVFToolTip
           width={width}
           height={height}
           levelStatus={levelStatus}
+          fineLevelLayout={fineLevelLayout}
           node={hoverStatus.node}
         />
       )}
+      {levelStatus.level === 1 &&
+        fineLevelLayout === EIVFFineLevelLayout.Project && (
+          <div className={classes.projectReturn}>
+            <CustomButton onClick={changeFineLevelLayout}>Back</CustomButton>
+          </div>
+        )}
     </div>
   );
 });

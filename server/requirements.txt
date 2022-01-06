@@ -1,3 +1,5 @@
 numpy
 flask
 flask_cors
+numba==0.53
+umap-learn

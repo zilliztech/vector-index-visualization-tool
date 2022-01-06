@@ -1,5 +1,5 @@
 from base_index import BaseIndex
-import hnswlib
+import hnswlib4vis
 import numpy as np
 from collections import defaultdict
 
@@ -21,7 +21,7 @@ class HNSWIndex(BaseIndex):
             raise RuntimeError('Index Build Error: No Vectors')
 
         self.has_index = True
-        self.index = hnswlib.Index('l2', self.dim)
+        self.index = hnswlib4vis.Index('l2', self.dim)
         self.index.init_index(
             max_elements=len(self.vectors),
             ef_construction=self.ef_construction,

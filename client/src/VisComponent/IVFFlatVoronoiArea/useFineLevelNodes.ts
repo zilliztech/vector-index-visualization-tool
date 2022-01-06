@@ -18,6 +18,7 @@ export const useFineLevelNodes = ({
   height,
   origin,
   maxR,
+  projectPadding = [30, 16],
 }: {
   data: ILevel;
   coarseLevelNodes: IIVFVoronoiAreaNode[];
@@ -27,6 +28,7 @@ export const useFineLevelNodes = ({
   height: number;
   origin: TCoord;
   maxR: number;
+  projectPadding?: [number, number];
 }) => {
   const [fineLevelNodes, setFineLevelNodes] = useState<
     IIVFVoronoiAreaFineNode[]
@@ -82,6 +84,8 @@ export const useFineLevelNodes = ({
             color: coarseCentrodColor,
             centroidX: coarseCentrodPos[0] + _x,
             centroidY: coarseCentrodPos[1] + _y,
+            projectX: 0,
+            projectY: 0,
           });
         }) as IIVFVoronoiAreaFineNode[];
       // const clusterIdList = Array.from(
@@ -116,6 +120,26 @@ export const useFineLevelNodes = ({
         // node.x = clusterCenter[0];
         // node.y = clusterCenter[1];
         // node.color = colorScheme[clusterOrder];
+      });
+
+      const projectX = d3
+        .scaleLinear()
+        .domain(
+          d3.extent(nodes, (node) => node.projection[0]) as [number, number]
+        )
+        .range([projectPadding[0], width - projectPadding[0]]);
+
+      const projectY = d3
+        .scaleLinear()
+        .domain(
+          d3.extent(nodes, (node) => node.projection[1]) as [number, number]
+        )
+        .range([projectPadding[1], height - projectPadding[1]]);
+
+      nodes.forEach((node) => {
+        node.projectX = projectX(node.projection[0]);
+
+        node.projectY = projectY(node.projection[1]);
       });
 
       const simulation = d3
