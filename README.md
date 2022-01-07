@@ -1,4 +1,4 @@
-# data-visualization-tool
+# vector-index-visualization-tool
 
 ## Overview
 
