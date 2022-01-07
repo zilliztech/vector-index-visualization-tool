@@ -60,9 +60,9 @@ const HNSWForceOne = observer(() => {
     searchStatus,
   });
 
-  const interLevelGap = 800;
-  const intraLevelGap = 1000;
-  const linkFadeTime = 1200;
+  const interLevelGap = 250;
+  const intraLevelGap = 500;
+  const linkFadeTime = 400;
   const { nodeShowTime, linkShowTime } = useTransitionTime({
     visData,
     searchStatus,
