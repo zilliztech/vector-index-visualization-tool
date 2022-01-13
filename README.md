@@ -36,7 +36,7 @@ $ conda install -c pytorch faiss-gpu cudatoolkit=10.2 # for CUDA 10.2
 ```
 - hnswlib4vis
   - [Download](https://drive.google.com/file/d/1rApQlIEJwrU6oVAVKqHEYDBX4jdC3YQ0/view?usp=sharing) and install wheel directly.
-  - compile C++ to py ([hnswlib4vis](https://github.com/alwayslove2013/hnswlib/tree/minmin)).
+  - compile C++ to py ([hnswlib4vis](https://github.com/alwayslove2013/hnswlib)).
 
 - Dataset (images and embedding vectors)
   - [images from VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar)
@@ -65,6 +65,7 @@ $ yarn start
 
 ## IVFFlat Visualization
 
+![image](./fig/ivfflat_3M.gif)
 ![image](./fig/IVF-Coarse)
 ![image](./fig/IVF-Fine)
 
@@ -73,6 +74,7 @@ The visiting records of vectors in IVFFlat comes from the python api of [faiss](
 
 ## HNSW Visualization
 
+![image](./fig/hnsw_7M.gif)
 ![image](./fig/HNSW)
 
 Getting the visiting records of vectors in HNSW comes by modifying the source cpp of [hnswlib](https://github.com/nmslib/hnswlib),
