@@ -31,7 +31,7 @@
     "lodash": "^4.17.21",
     "mobx": "^6.3.6",
     "mobx-react-lite": "^3.2.1",
-    "node-sass": "^6.0.1",
+    "node-sass": "^7.0.0",
     "nth-check": "^2.0.1",
     "qs": "^6.10.1",
     "react": "^17.0.2",
