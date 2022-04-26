@@ -1,3 +1,5 @@
+This repo is deprecated. We are developing a new tool for visualize anns index. Take a look at https://github.com/zilliztech/feder
+
 # vector-index-visualization-tool
 
 ## Overview
